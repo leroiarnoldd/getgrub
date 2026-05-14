@@ -1,0 +1,11 @@
+{
+  "name": "getgrub",
+  "private": true,
+  "workspaces": ["apps/*", "workers/*"],
+  "scripts": {
+    "mobile": "cd apps/mobile && npx expo start",
+    "dashboard": "cd apps/dashboard && npm run dev",
+    "worker:dev": "cd workers/ai-proxy && wrangler dev",
+    "worker:deploy": "cd workers/ai-proxy && wrangler deploy"
+  }
+}
