@@ -1,13 +1,13 @@
 import { Redirect, Stack } from 'expo-router';
 import { useAuthStore } from '../../stores/authStore';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 export default function AuthLayout() {
   const { user, isLoading } = useAuthStore();
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-getgrub-cream">
+      <View style={styles.loading}>
         <ActivityIndicator color="#e8593c" size="large" />
       </View>
     );
@@ -21,3 +21,12 @@ export default function AuthLayout() {
     <Stack screenOptions={{ headerShown: false }} />
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fafaf8',
+  },
+});

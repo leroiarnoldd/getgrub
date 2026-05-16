@@ -1,4 +1,4 @@
-import { FlatList, RefreshControl, View, Text } from 'react-native';
+import { FlatList, RefreshControl, View, Text, StyleSheet } from 'react-native';
 import { DealCard } from './DealCard';
 import { DealCardSkeleton } from '../ui/LoadingSkeleton';
 import type { DealWithRestaurant } from '../../types';
@@ -15,7 +15,7 @@ interface Props {
 export function DealList({ deals, isLoading, isRefreshing, onRefresh, userDietaryTags, emptyMessage }: Props) {
   if (isLoading) {
     return (
-      <View className="px-4 pt-4">
+      <View style={styles.skeletonContainer}>
         {[1, 2, 3].map(i => <DealCardSkeleton key={i} />)}
       </View>
     );
@@ -33,9 +33,9 @@ export function DealList({ deals, isLoading, isRefreshing, onRefresh, userDietar
         <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#e8593c" />
       }
       ListEmptyComponent={
-        <View className="items-center py-16">
-          <Text className="text-4xl mb-4">🍽️</Text>
-          <Text className="text-gray-500 text-center px-8">
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>🍽️</Text>
+          <Text style={styles.emptyText}>
             {emptyMessage || "No deals near you yet — we're signing more restaurants every week"}
           </Text>
         </View>
@@ -43,3 +43,23 @@ export function DealList({ deals, isLoading, isRefreshing, onRefresh, userDietar
     />
   );
 }
+
+const styles = StyleSheet.create({
+  skeletonContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 64,
+  },
+  emptyEmoji: {
+    fontSize: 40,
+    marginBottom: 16,
+  },
+  emptyText: {
+    color: '#6b7280',
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+});

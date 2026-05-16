@@ -1,4 +1,4 @@
-import { View, TextInput, TouchableOpacity } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 
 export function ConciergeInput({ value, onChangeText, onSubmit, isLoading }: Props) {
   return (
-    <View className="flex-row items-center bg-white rounded-2xl border border-gray-200 px-4 py-3 gap-3">
+    <View style={styles.container}>
       <Ionicons name="search" size={20} color="#9ca3af" />
       <TextInput
         value={value}
@@ -18,7 +18,7 @@ export function ConciergeInput({ value, onChangeText, onSubmit, isLoading }: Pro
         onSubmitEditing={onSubmit}
         placeholder="What are you in the mood for?"
         placeholderTextColor="#9ca3af"
-        className="flex-1 text-getgrub-navy text-base"
+        style={styles.input}
         returnKeyType="search"
         autoFocus
       />
@@ -30,3 +30,22 @@ export function ConciergeInput({ value, onChangeText, onSubmit, isLoading }: Pro
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  input: {
+    flex: 1,
+    color: '#1a1a2e',
+    fontSize: 16,
+  },
+});

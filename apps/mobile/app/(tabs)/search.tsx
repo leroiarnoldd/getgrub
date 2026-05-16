@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConciergeInput } from '../../components/search/ConciergeInput';
 import { MatchResult } from '../../components/search/MatchResult';
@@ -33,7 +33,6 @@ export default function SearchScreen() {
     setHasSearched(true);
 
     try {
-      // Fetch candidates: active deals with restaurants
       const { data: dealsData, error: dealsError } = await supabase
         .from('deals')
         .select('*, restaurant:restaurants(*)')
@@ -50,7 +49,6 @@ export default function SearchScreen() {
         .filter((r, i, arr) => arr.findIndex(x => x.id === r.id) === i);
       setRestaurants(fetchedRestaurants);
 
-      // Build candidates for AI
       const candidates: RestaurantCandidate[] = fetchedRestaurants.map(r => ({
         id: r.id,
         name: r.name,
@@ -102,13 +100,13 @@ export default function SearchScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream">
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        contentContainerStyle={styles.scrollContent}
       >
-        <Text className="text-2xl font-black text-getgrub-navy mb-1">AI Concierge</Text>
-        <Text className="text-gray-500 mb-4 text-sm">Tell me what you fancy and I'll find the perfect deal</Text>
+        <Text style={styles.title}>AI Concierge</Text>
+        <Text style={styles.subtitle}>Tell me what you fancy and I'll find the perfect deal</Text>
 
         <ConciergeInput
           value={query}
@@ -117,18 +115,14 @@ export default function SearchScreen() {
           isLoading={isLoading}
         />
 
-        {/* Quick prompts */}
         {!hasSearched && (
-          <View className="mt-6">
-            <Text className="text-getgrub-navy font-semibold mb-3">Try asking for...</Text>
-            <View className="flex-row flex-wrap gap-2">
+          <View style={styles.promptsBlock}>
+            <Text style={styles.promptsLabel}>Try asking for...</Text>
+            <View style={styles.promptChips}>
               {PROMPTS.map(p => (
-                <View
-                  key={p}
-                  style={{ borderRadius: 20, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' }}
-                >
+                <View key={p} style={styles.promptChip}>
                   <Text
-                    style={{ color: '#1a1a2e', fontSize: 13 }}
+                    style={styles.promptChipText}
                     onPress={() => { setQuery(p); handleSearch(p); }}
                   >
                     {p}
@@ -140,21 +134,21 @@ export default function SearchScreen() {
         )}
 
         {isLoading && (
-          <View className="items-center py-12 gap-3">
+          <View style={styles.loadingBlock}>
             <ActivityIndicator size="large" color="#e8593c" />
-            <Text className="text-gray-500">Finding your perfect match...</Text>
+            <Text style={styles.loadingText}>Finding your perfect match...</Text>
           </View>
         )}
 
         {error && (
-          <View className="bg-red-50 rounded-xl px-4 py-3 mt-4">
-            <Text className="text-red-600 text-sm">{error}</Text>
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
         {!isLoading && results.length > 0 && (
-          <View className="mt-6">
-            <Text className="text-getgrub-navy font-semibold mb-3">
+          <View style={styles.resultsBlock}>
+            <Text style={styles.resultsLabel}>
               {results.length} match{results.length !== 1 ? 'es' : ''} for "{query}"
             </Text>
             {results.map(result => {
@@ -173,9 +167,9 @@ export default function SearchScreen() {
         )}
 
         {!isLoading && hasSearched && results.length === 0 && !error && (
-          <View className="items-center py-16">
-            <Text className="text-4xl mb-4">🤔</Text>
-            <Text className="text-gray-500 text-center px-8">
+          <View style={styles.emptyBlock}>
+            <Text style={styles.emptyEmoji}>🤔</Text>
+            <Text style={styles.emptyText}>
               No matches found. Try a different search or check back later for new deals.
             </Text>
           </View>
@@ -184,3 +178,90 @@ export default function SearchScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+    marginBottom: 4,
+  },
+  subtitle: {
+    color: '#6b7280',
+    marginBottom: 16,
+    fontSize: 14,
+  },
+  promptsBlock: {
+    marginTop: 24,
+  },
+  promptsLabel: {
+    color: '#1a1a2e',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  promptChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  promptChip: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#fff',
+  },
+  promptChipText: {
+    color: '#1a1a2e',
+    fontSize: 13,
+  },
+  loadingBlock: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    gap: 12,
+  },
+  loadingText: {
+    color: '#6b7280',
+  },
+  errorBox: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  errorText: {
+    color: '#dc2626',
+    fontSize: 14,
+  },
+  resultsBlock: {
+    marginTop: 24,
+  },
+  resultsLabel: {
+    color: '#1a1a2e',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  emptyBlock: {
+    alignItems: 'center',
+    paddingVertical: 64,
+  },
+  emptyEmoji: {
+    fontSize: 40,
+    marginBottom: 16,
+  },
+  emptyText: {
+    color: '#6b7280',
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+});

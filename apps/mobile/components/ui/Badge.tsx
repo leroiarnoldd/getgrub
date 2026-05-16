@@ -1,21 +1,34 @@
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
 interface Props {
   label: string;
   color?: 'coral' | 'navy' | 'teal' | 'gray';
 }
 
+const COLOR_MAP = {
+  coral: { bg: '#fff7ed', text: '#9a3412' },
+  navy:  { bg: '#eff6ff', text: '#1e40af' },
+  teal:  { bg: '#f0fdfa', text: '#0f766e' },
+  gray:  { bg: '#f3f4f6', text: '#374151' },
+};
+
 export function Badge({ label, color = 'gray' }: Props) {
-  const colors = {
-    coral: 'bg-orange-100 text-orange-800',
-    navy: 'bg-blue-100 text-blue-800',
-    teal: 'bg-teal-100 text-teal-800',
-    gray: 'bg-gray-100 text-gray-700',
-  };
-  const [bg, text] = colors[color].split(' ');
+  const { bg, text } = COLOR_MAP[color];
   return (
-    <View className={`${bg} px-2 py-0.5 rounded-full`}>
-      <Text className={`${text} text-xs font-medium`}>{label}</Text>
+    <View style={[styles.badge, { backgroundColor: bg }]}>
+      <Text style={[styles.label, { color: text }]}>{label}</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+});

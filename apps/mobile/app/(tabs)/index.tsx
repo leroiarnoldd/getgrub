@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDeals } from '../../hooks/useDeals';
 import { useUserStore } from '../../stores/userStore';
@@ -50,12 +50,12 @@ export default function HomeScreen() {
   const { data: deals = [], isLoading, refetch, isRefetching } = useDeals(profile?.city_id, cuisineFilter);
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream">
+    <SafeAreaView style={styles.safeArea}>
       {/* Header */}
-      <View className="px-4 pt-4 pb-2">
-        <Text className="text-2xl font-black text-getgrub-navy">Get Grub</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Get Grub</Text>
         {city && (
-          <Text className="text-gray-500 text-sm">{city.name} · {deals.length} deals available</Text>
+          <Text style={styles.headerSub}>{city.name} · {deals.length} deals available</Text>
         )}
       </View>
 
@@ -63,15 +63,21 @@ export default function HomeScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 8 }}
+        contentContainerStyle={styles.filterRow}
       >
         {CUISINE_FILTERS.map(f => (
           <TouchableOpacity
             key={f.value}
             onPress={() => setCuisineFilter(f.value)}
-            className={`rounded-full px-4 py-2 ${cuisineFilter === f.value ? 'bg-getgrub-coral' : 'bg-white border border-gray-200'}`}
+            style={[
+              styles.filterChip,
+              cuisineFilter === f.value ? styles.filterChipActive : styles.filterChipInactive,
+            ]}
           >
-            <Text className={`font-medium text-sm ${cuisineFilter === f.value ? 'text-white' : 'text-getgrub-navy'}`}>
+            <Text style={[
+              styles.filterChipText,
+              cuisineFilter === f.value ? styles.filterChipTextActive : styles.filterChipTextInactive,
+            ]}>
               {f.label}
             </Text>
           </TouchableOpacity>
@@ -88,3 +94,52 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+  },
+  headerSub: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  filterRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  filterChip: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  filterChipActive: {
+    backgroundColor: '#e8593c',
+  },
+  filterChipInactive: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  filterChipText: {
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  filterChipTextActive: {
+    color: '#ffffff',
+  },
+  filterChipTextInactive: {
+    color: '#1a1a2e',
+  },
+});

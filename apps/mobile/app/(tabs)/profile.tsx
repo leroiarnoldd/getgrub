@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Switch, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
 import { useUserStore } from '../../stores/userStore';
@@ -18,65 +18,65 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream">
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        <Text className="text-2xl font-black text-getgrub-navy mb-6">Profile</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.pageTitle}>Profile</Text>
 
         {/* User info */}
-        <View className="bg-white rounded-2xl p-5 mb-4">
-          <Text className="text-getgrub-navy font-bold text-lg">
+        <View style={styles.card}>
+          <Text style={styles.displayName}>
             {profile?.display_name || 'Grubber'}
           </Text>
-          <Text className="text-gray-500 text-sm mt-0.5">{user?.email}</Text>
+          <Text style={styles.email}>{user?.email}</Text>
         </View>
 
         {/* Stats */}
-        <View className="bg-white rounded-2xl p-5 mb-4">
-          <Text className="text-getgrub-navy font-bold mb-4">Your savings</Text>
-          <View className="flex-row justify-between">
-            <View className="items-center">
-              <Text className="text-2xl font-black text-getgrub-coral">
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Your savings</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValueCoral}>
                 £{(profile?.total_saved ?? 0).toFixed(2)}
               </Text>
-              <Text className="text-gray-500 text-xs mt-1">Total saved</Text>
+              <Text style={styles.statLabel}>Total saved</Text>
             </View>
-            <View className="items-center">
-              <Text className="text-2xl font-black text-getgrub-navy">
+            <View style={styles.statItem}>
+              <Text style={styles.statValueNavy}>
                 {profile?.total_redemptions ?? 0}
               </Text>
-              <Text className="text-gray-500 text-xs mt-1">Redemptions</Text>
+              <Text style={styles.statLabel}>Redemptions</Text>
             </View>
           </View>
         </View>
 
         {/* Preferences */}
         {profile && (
-          <View className="bg-white rounded-2xl p-5 mb-4">
-            <Text className="text-getgrub-navy font-bold mb-3">Your preferences</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Your preferences</Text>
             {profile.dietary_tags.length > 0 && (
-              <View className="mb-2">
-                <Text className="text-gray-500 text-xs mb-1">Dietary</Text>
-                <Text className="text-getgrub-navy text-sm">{profile.dietary_tags.join(', ')}</Text>
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Dietary</Text>
+                <Text style={styles.prefValue}>{profile.dietary_tags.join(', ')}</Text>
               </View>
             )}
             {profile.vibe_preferences.length > 0 && (
-              <View>
-                <Text className="text-gray-500 text-xs mb-1">Vibes</Text>
-                <Text className="text-getgrub-navy text-sm">{profile.vibe_preferences.join(', ')}</Text>
+              <View style={styles.prefRow}>
+                <Text style={styles.prefLabel}>Vibes</Text>
+                <Text style={styles.prefValue}>{profile.vibe_preferences.join(', ')}</Text>
               </View>
             )}
             {profile.dietary_tags.length === 0 && profile.vibe_preferences.length === 0 && (
-              <Text className="text-gray-400 text-sm">No preferences set</Text>
+              <Text style={styles.noPrefs}>No preferences set</Text>
             )}
           </View>
         )}
 
         {/* Notifications */}
-        <View className="bg-white rounded-2xl p-5 mb-4">
-          <View className="flex-row items-center justify-between">
+        <View style={styles.card}>
+          <View style={styles.notifRow}>
             <View>
-              <Text className="text-getgrub-navy font-semibold">Push notifications</Text>
-              <Text className="text-gray-500 text-xs mt-0.5">New deals and reminders</Text>
+              <Text style={styles.notifTitle}>Push notifications</Text>
+              <Text style={styles.notifSub}>New deals and reminders</Text>
             </View>
             <Switch
               value={profile?.push_enabled ?? true}
@@ -88,13 +88,112 @@ export default function ProfileScreen() {
         </View>
 
         {/* Sign out */}
-        <TouchableOpacity
-          onPress={signOut}
-          className="bg-white rounded-2xl p-5 items-center border border-red-100"
-        >
-          <Text className="text-red-500 font-semibold">Sign out</Text>
+        <TouchableOpacity onPress={signOut} style={styles.signOutButton}>
+          <Text style={styles.signOutText}>Sign out</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+    marginBottom: 24,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  displayName: {
+    color: '#1a1a2e',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+  email: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  cardTitle: {
+    color: '#1a1a2e',
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValueCoral: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#e8593c',
+  },
+  statValueNavy: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+  },
+  statLabel: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  prefRow: {
+    marginBottom: 8,
+  },
+  prefLabel: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  prefValue: {
+    color: '#1a1a2e',
+    fontSize: 14,
+  },
+  noPrefs: {
+    color: '#9ca3af',
+    fontSize: 14,
+  },
+  notifRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  notifTitle: {
+    color: '#1a1a2e',
+    fontWeight: '600',
+  },
+  notifSub: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  signOutButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+  },
+  signOutText: {
+    color: '#ef4444',
+    fontWeight: '600',
+  },
+});

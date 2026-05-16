@@ -1,11 +1,11 @@
-import { View, Animated } from 'react-native';
+import { View, Animated, StyleSheet } from 'react-native';
 import { useEffect, useRef } from 'react';
 
 interface Props {
-  className?: string;
+  style?: object;
 }
 
-export function LoadingSkeleton({ className = '' }: Props) {
+export function LoadingSkeleton({ style }: Props) {
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -20,19 +20,57 @@ export function LoadingSkeleton({ className = '' }: Props) {
   }, []);
 
   return (
-    <Animated.View style={{ opacity }} className={`bg-gray-200 rounded-lg ${className}`} />
+    <Animated.View style={[styles.skeleton, style, { opacity }]} />
   );
 }
 
 export function DealCardSkeleton() {
   return (
-    <View className="bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
-      <LoadingSkeleton className="h-48 rounded-none" />
-      <View className="p-4 gap-2">
-        <LoadingSkeleton className="h-5 w-3/4" />
-        <LoadingSkeleton className="h-4 w-1/2" />
-        <LoadingSkeleton className="h-4 w-2/3" />
+    <View style={styles.card}>
+      <LoadingSkeleton style={styles.image} />
+      <View style={styles.body}>
+        <LoadingSkeleton style={styles.line1} />
+        <LoadingSkeleton style={styles.line2} />
+        <LoadingSkeleton style={styles.line3} />
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  skeleton: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 8,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  image: {
+    height: 192,
+    borderRadius: 0,
+  },
+  body: {
+    padding: 16,
+    gap: 8,
+  },
+  line1: {
+    height: 20,
+    width: '75%',
+  },
+  line2: {
+    height: 16,
+    width: '50%',
+  },
+  line3: {
+    height: 16,
+    width: '66%',
+  },
+});

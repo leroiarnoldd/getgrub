@@ -1,4 +1,4 @@
-import { View, Platform } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 
 interface Props {
@@ -9,10 +9,10 @@ interface Props {
 
 export function RestaurantMap({ lat, lng, name }: Props) {
   return (
-    <View className="h-48 rounded-2xl overflow-hidden">
+    <View style={styles.container}>
       <MapView
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-        style={{ flex: 1 }}
+        style={styles.map}
         initialRegion={{
           latitude: lat,
           longitude: lng,
@@ -27,3 +27,14 @@ export function RestaurantMap({ lat, lng, name }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    height: 192,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  map: {
+    flex: 1,
+  },
+});

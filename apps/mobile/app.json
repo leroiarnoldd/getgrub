@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "Get Grub",
-    "slug": "getgrub",
+    "slug": "getgrub-app",
+    "sdkVersion": "54.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -35,14 +36,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#e8593c",
-          "sounds": []
-        }
-      ],
+      "expo-notifications",
       [
         "expo-location",
         {

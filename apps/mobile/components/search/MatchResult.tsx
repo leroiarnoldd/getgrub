@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, Text } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ReliabilityBadge } from '../ui/ReliabilityBadge';
@@ -15,7 +15,7 @@ export function MatchResult({ result, restaurant, dealId }: Props) {
   if (!restaurant) return null;
 
   return (
-    <View className="bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
+    <View style={styles.card}>
       {restaurant.cover_image_url && (
         <Image
           source={restaurant.cover_image_url}
@@ -24,24 +24,80 @@ export function MatchResult({ result, restaurant, dealId }: Props) {
           transition={300}
         />
       )}
-      <View className="p-4 gap-2">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-getgrub-navy font-bold text-lg flex-1 mr-2">{restaurant.name}</Text>
+      <View style={styles.body}>
+        <View style={styles.headerRow}>
+          <Text style={styles.name}>{restaurant.name}</Text>
           <ReliabilityBadge score={restaurant.reliability_score} />
         </View>
-        <View className="bg-gray-50 rounded-xl px-3 py-2">
-          <Text className="text-gray-600 text-sm italic">"{result.match_reason}"</Text>
+        <View style={styles.reasonBox}>
+          <Text style={styles.reason}>"{result.match_reason}"</Text>
         </View>
-        <Text className="text-getgrub-coral font-semibold">{result.highlight}</Text>
+        <Text style={styles.highlight}>{result.highlight}</Text>
         {dealId && (
           <TouchableOpacity
             onPress={() => router.push(`/deal/${dealId}`)}
-            className="bg-getgrub-coral rounded-xl py-3 items-center mt-1"
+            style={styles.claimButton}
           >
-            <Text className="text-white font-semibold">Claim this deal →</Text>
+            <Text style={styles.claimButtonText}>Claim this deal →</Text>
           </TouchableOpacity>
         )}
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  body: {
+    padding: 16,
+    gap: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  name: {
+    color: '#1a1a2e',
+    fontWeight: '700',
+    fontSize: 18,
+    flex: 1,
+    marginRight: 8,
+  },
+  reasonBox: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  reason: {
+    color: '#4b5563',
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  highlight: {
+    color: '#e8593c',
+    fontWeight: '600',
+  },
+  claimButton: {
+    backgroundColor: '#e8593c',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  claimButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+});

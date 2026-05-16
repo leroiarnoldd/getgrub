@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
@@ -49,10 +49,10 @@ export default function SavedScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream">
-      <View className="px-4 pt-4 pb-2">
-        <Text className="text-2xl font-black text-getgrub-navy">Saved deals</Text>
-        <Text className="text-gray-500 text-sm">{deals.length} saved</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Saved deals</Text>
+        <Text style={styles.headerSub}>{deals.length} saved</Text>
       </View>
 
       <DealList
@@ -66,3 +66,24 @@ export default function SavedScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+  },
+  headerSub: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+});

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -57,7 +57,6 @@ export default function OnboardingScreen() {
     if (!user) return;
     setIsLoading(true);
     try {
-      // Get city ID
       let cityId: string | null = null;
       if (selectedCity) {
         const { data } = await supabase
@@ -92,14 +91,20 @@ export default function OnboardingScreen() {
       title: 'Where are you based?',
       subtitle: "We'll show you deals in your city",
       content: (
-        <View className="gap-3">
+        <View style={styles.cityList}>
           {CITIES.map(city => (
             <TouchableOpacity
               key={city.slug}
               onPress={() => setSelectedCity(city.slug)}
-              className={`rounded-2xl px-5 py-4 border-2 ${selectedCity === city.slug ? 'bg-getgrub-coral border-getgrub-coral' : 'bg-white border-gray-200'}`}
+              style={[
+                styles.cityOption,
+                selectedCity === city.slug ? styles.cityOptionSelected : styles.cityOptionDefault,
+              ]}
             >
-              <Text className={`font-semibold text-base ${selectedCity === city.slug ? 'text-white' : 'text-getgrub-navy'}`}>
+              <Text style={[
+                styles.cityOptionText,
+                selectedCity === city.slug ? styles.cityOptionTextSelected : styles.cityOptionTextDefault,
+              ]}>
                 {city.name}
               </Text>
             </TouchableOpacity>
@@ -113,14 +118,20 @@ export default function OnboardingScreen() {
       title: 'Any dietary requirements?',
       subtitle: "We'll highlight relevant options for you",
       content: (
-        <View className="flex-row flex-wrap gap-3">
+        <View style={styles.chipRow}>
           {DIETARY_OPTIONS.map(opt => (
             <TouchableOpacity
               key={opt.value}
               onPress={() => toggleDietary(opt.value)}
-              className={`rounded-2xl px-4 py-3 border-2 ${selectedDietary.includes(opt.value) ? 'bg-getgrub-teal border-getgrub-teal' : 'bg-white border-gray-200'}`}
+              style={[
+                styles.chip,
+                selectedDietary.includes(opt.value) ? styles.chipTealSelected : styles.chipDefault,
+              ]}
             >
-              <Text className={`font-medium ${selectedDietary.includes(opt.value) ? 'text-white' : 'text-getgrub-navy'}`}>
+              <Text style={[
+                styles.chipText,
+                selectedDietary.includes(opt.value) ? styles.chipTextSelected : styles.chipTextDefault,
+              ]}>
                 {opt.label}
               </Text>
             </TouchableOpacity>
@@ -134,14 +145,20 @@ export default function OnboardingScreen() {
       title: 'What kind of vibe?',
       subtitle: 'Pick your favourite dining occasions',
       content: (
-        <View className="flex-row flex-wrap gap-3">
+        <View style={styles.chipRow}>
           {VIBE_OPTIONS.map(opt => (
             <TouchableOpacity
               key={opt.value}
               onPress={() => toggleVibe(opt.value)}
-              className={`rounded-2xl px-4 py-3 border-2 ${selectedVibes.includes(opt.value) ? 'bg-getgrub-navy border-getgrub-navy' : 'bg-white border-gray-200'}`}
+              style={[
+                styles.chip,
+                selectedVibes.includes(opt.value) ? styles.chipNavySelected : styles.chipDefault,
+              ]}
             >
-              <Text className={`font-medium ${selectedVibes.includes(opt.value) ? 'text-white' : 'text-getgrub-navy'}`}>
+              <Text style={[
+                styles.chipText,
+                selectedVibes.includes(opt.value) ? styles.chipTextSelected : styles.chipTextDefault,
+              ]}>
                 {opt.label}
               </Text>
             </TouchableOpacity>
@@ -156,33 +173,36 @@ export default function OnboardingScreen() {
   const currentStep = steps[step];
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream">
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 24 }}>
         {/* Progress dots */}
-        <View className="flex-row gap-2 mb-8">
+        <View style={styles.progressRow}>
           {steps.map((_, i) => (
             <View
               key={i}
-              className={`h-2 rounded-full ${i === step ? 'w-8 bg-getgrub-coral' : 'w-2 bg-gray-300'}`}
+              style={[
+                styles.progressDot,
+                i === step ? styles.progressDotActive : styles.progressDotInactive,
+              ]}
             />
           ))}
         </View>
 
-        <Text className="text-2xl font-black text-getgrub-navy mb-2">{currentStep.title}</Text>
-        <Text className="text-gray-500 mb-8">{currentStep.subtitle}</Text>
+        <Text style={styles.stepTitle}>{currentStep.title}</Text>
+        <Text style={styles.stepSubtitle}>{currentStep.subtitle}</Text>
 
         {currentStep.content}
 
-        <View className="mt-8 gap-3">
+        <View style={styles.ctaBlock}>
           <TouchableOpacity
             onPress={currentStep.onNext}
             disabled={isLoading}
-            className={`bg-getgrub-coral rounded-2xl py-4 items-center ${isLoading ? 'opacity-50' : ''}`}
+            style={[styles.continueButton, isLoading && styles.disabledButton]}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-white font-bold text-lg">
+              <Text style={styles.continueButtonText}>
                 {step < steps.length - 1 ? 'Continue' : 'Finish setup'}
               </Text>
             )}
@@ -191,9 +211,9 @@ export default function OnboardingScreen() {
           {currentStep.canSkip && (
             <TouchableOpacity
               onPress={step < steps.length - 1 ? currentStep.onNext : handleFinish}
-              className="items-center py-2"
+              style={styles.skipButton}
             >
-              <Text className="text-gray-400">Skip for now</Text>
+              <Text style={styles.skipButtonText}>Skip for now</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -201,3 +221,121 @@ export default function OnboardingScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  progressRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 32,
+  },
+  progressDot: {
+    height: 8,
+    borderRadius: 999,
+  },
+  progressDotActive: {
+    width: 32,
+    backgroundColor: '#e8593c',
+  },
+  progressDotInactive: {
+    width: 8,
+    backgroundColor: '#d1d5db',
+  },
+  stepTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+    marginBottom: 8,
+  },
+  stepSubtitle: {
+    color: '#6b7280',
+    marginBottom: 32,
+  },
+  cityList: {
+    gap: 12,
+  },
+  cityOption: {
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderWidth: 2,
+  },
+  cityOptionSelected: {
+    backgroundColor: '#e8593c',
+    borderColor: '#e8593c',
+  },
+  cityOptionDefault: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e5e7eb',
+  },
+  cityOptionText: {
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  cityOptionTextSelected: {
+    color: '#ffffff',
+  },
+  cityOptionTextDefault: {
+    color: '#1a1a2e',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  chip: {
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 2,
+  },
+  chipDefault: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e5e7eb',
+  },
+  chipTealSelected: {
+    backgroundColor: '#1d9e75',
+    borderColor: '#1d9e75',
+  },
+  chipNavySelected: {
+    backgroundColor: '#1a1a2e',
+    borderColor: '#1a1a2e',
+  },
+  chipText: {
+    fontWeight: '500',
+  },
+  chipTextSelected: {
+    color: '#ffffff',
+  },
+  chipTextDefault: {
+    color: '#1a1a2e',
+  },
+  ctaBlock: {
+    marginTop: 32,
+    gap: 12,
+  },
+  continueButton: {
+    backgroundColor: '#e8593c',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  continueButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  skipButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  skipButtonText: {
+    color: '#9ca3af',
+  },
+});

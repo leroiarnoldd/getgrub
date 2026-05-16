@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -9,12 +9,12 @@ import { useClaim } from '../../hooks/useClaim';
 
 function StarRating({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
   return (
-    <View className="mb-4">
-      <Text className="text-getgrub-navy font-medium mb-2">{label}</Text>
-      <View className="flex-row gap-2">
+    <View style={styles.starBlock}>
+      <Text style={styles.starLabel}>{label}</Text>
+      <View style={styles.starRow}>
         {[1, 2, 3, 4, 5].map(star => (
           <TouchableOpacity key={star} onPress={() => onChange(star)}>
-            <Text style={{ fontSize: 28, color: star <= value ? '#e8593c' : '#d1d5db' }}>★</Text>
+            <Text style={[styles.star, { color: star <= value ? '#e8593c' : '#d1d5db' }]}>★</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -40,7 +40,6 @@ export default function FeedbackScreen() {
     setIsSubmitting(true);
 
     try {
-      // Analyze feedback via AI
       let aiThemes: string[] = [];
       let aiSentiment: string = 'neutral';
 
@@ -57,7 +56,6 @@ export default function FeedbackScreen() {
         // AI analysis is non-critical
       }
 
-      // Save feedback
       await supabase.from('feedback').insert({
         claim_id: claim.id,
         user_id: user.id,
@@ -72,7 +70,6 @@ export default function FeedbackScreen() {
         would_return: valueRating >= 4 && foodRating >= 4,
       });
 
-      // Mark feedback as submitted on the claim
       await supabase
         .from('claims')
         .update({ feedback_submitted: true })
@@ -89,27 +86,27 @@ export default function FeedbackScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream">
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-xl font-black text-getgrub-navy">How was it?</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>How was it?</Text>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text className="text-gray-400">Skip</Text>
+            <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
 
-        <Text className="text-gray-500 mb-6">
+        <Text style={styles.intro}>
           Your honest feedback helps restaurants improve and helps other diners find great deals.
         </Text>
 
-        <View className="bg-white rounded-2xl p-4 mb-4">
+        <View style={styles.ratingsCard}>
           <StarRating value={foodRating} onChange={setFoodRating} label="Food quality" />
           <StarRating value={vibeRating} onChange={setVibeRating} label="Atmosphere & service" />
           <StarRating value={valueRating} onChange={setValueRating} label="Value for money" />
         </View>
 
-        <View className="bg-white rounded-2xl p-4 mb-6">
-          <Text className="text-getgrub-navy font-medium mb-2">Anything else to share? (optional)</Text>
+        <View style={styles.freetextCard}>
+          <Text style={styles.freetextLabel}>Anything else to share? (optional)</Text>
           <TextInput
             value={freetext}
             onChangeText={setFreetext}
@@ -117,23 +114,112 @@ export default function FeedbackScreen() {
             placeholderTextColor="#9ca3af"
             multiline
             numberOfLines={4}
-            className="text-getgrub-navy text-sm"
-            style={{ minHeight: 80, textAlignVertical: 'top' }}
+            style={styles.freetextInput}
           />
         </View>
 
         <TouchableOpacity
           onPress={handleSubmit}
           disabled={!canSubmit || isSubmitting}
-          className={`rounded-2xl py-4 items-center ${canSubmit ? 'bg-getgrub-coral' : 'bg-gray-300'} ${isSubmitting ? 'opacity-50' : ''}`}
+          style={[
+            styles.submitButton,
+            canSubmit ? styles.submitButtonActive : styles.submitButtonInactive,
+            isSubmitting && styles.submitButtonDisabled,
+          ]}
         >
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white font-bold text-lg">Submit feedback</Text>
+            <Text style={styles.submitButtonText}>Submit feedback</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1a1a2e',
+  },
+  skipText: {
+    color: '#9ca3af',
+  },
+  intro: {
+    color: '#6b7280',
+    marginBottom: 24,
+  },
+  ratingsCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  starBlock: {
+    marginBottom: 16,
+  },
+  starLabel: {
+    color: '#1a1a2e',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  starRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  star: {
+    fontSize: 28,
+  },
+  freetextCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+  },
+  freetextLabel: {
+    color: '#1a1a2e',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  freetextInput: {
+    color: '#1a1a2e',
+    fontSize: 14,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  submitButtonActive: {
+    backgroundColor: '#e8593c',
+  },
+  submitButtonInactive: {
+    backgroundColor: '#d1d5db',
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+});

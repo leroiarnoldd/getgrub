@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDeal } from '../../hooks/useDeals';
@@ -58,7 +58,7 @@ export default function DealDetailScreen() {
 
   if (isLoading || !deal) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-getgrub-cream">
+      <SafeAreaView style={styles.loadingScreen}>
         <ActivityIndicator size="large" color="#e8593c" />
       </SafeAreaView>
     );
@@ -68,48 +68,48 @@ export default function DealDetailScreen() {
   const isValidNow = isDealValidNow(deal);
 
   return (
-    <SafeAreaView className="flex-1 bg-getgrub-cream" edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <ScrollView>
         <RestaurantHero restaurant={r} isSaved={isSaved} onToggleSave={handleToggleSave} />
 
-        <View className="p-4 gap-4">
+        <View style={styles.content}>
           {/* Restaurant info */}
-          <View className="flex-row items-start justify-between">
-            <View className="flex-1 mr-3">
-              <Text className="text-2xl font-black text-getgrub-navy">{r.name}</Text>
-              <Text className="text-gray-500 text-sm mt-1">
+          <View style={styles.restaurantRow}>
+            <View style={styles.restaurantInfo}>
+              <Text style={styles.restaurantName}>{r.name}</Text>
+              <Text style={styles.cuisineText}>
                 {r.cuisine_tags.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' · ')}
               </Text>
               {r.address && (
-                <Text className="text-gray-400 text-xs mt-1">{r.address}</Text>
+                <Text style={styles.addressText}>{r.address}</Text>
               )}
             </View>
             <ReliabilityBadge score={r.reliability_score} />
           </View>
 
           {r.description && (
-            <Text className="text-gray-600">{r.description}</Text>
+            <Text style={styles.description}>{r.description}</Text>
           )}
 
           {/* Deal highlight */}
-          <View className={`rounded-2xl px-4 py-4 ${isValidNow ? 'bg-getgrub-coral' : 'bg-gray-200'}`}>
-            <Text className={`font-black text-2xl ${isValidNow ? 'text-white' : 'text-gray-500'}`}>
+          <View style={[styles.dealHighlight, isValidNow ? styles.dealHighlightActive : styles.dealHighlightInactive]}>
+            <Text style={[styles.dealTitle, isValidNow ? styles.dealTitleActive : styles.dealTitleInactive]}>
               {deal.title}
             </Text>
             {deal.description && (
-              <Text className={`text-sm mt-1 ${isValidNow ? 'text-white/80' : 'text-gray-400'}`}>
+              <Text style={[styles.dealDesc, isValidNow ? styles.dealDescActive : styles.dealDescInactive]}>
                 {deal.description}
               </Text>
             )}
             {!isValidNow && (
-              <Text className="text-gray-500 text-sm mt-2">Not available right now</Text>
+              <Text style={styles.notAvailableText}>Not available right now</Text>
             )}
           </View>
 
           {/* Deal details */}
-          <View className="bg-white rounded-2xl p-4 gap-3">
-            <Text className="text-getgrub-navy font-bold">Deal details</Text>
-            <View className="flex-row flex-wrap gap-2">
+          <View style={styles.detailsCard}>
+            <Text style={styles.detailsTitle}>Deal details</Text>
+            <View style={styles.badgeRow}>
               <Badge label={`Valid: ${formatDaysRange(deal.valid_days)}`} color="navy" />
               {deal.valid_from && deal.valid_until && (
                 <Badge label={`${deal.valid_from}–${deal.valid_until}`} color="gray" />
@@ -117,44 +117,47 @@ export default function DealDetailScreen() {
               {deal.includes_drinks && <Badge label="Drinks included" color="teal" />}
               {deal.min_spend && <Badge label={`Min spend £${deal.min_spend}`} color="gray" />}
             </View>
-
             <DietaryTags tags={r.dietary_tags} userDietaryTags={profile?.dietary_tags} />
           </View>
 
           {/* Party size */}
-          <View className="bg-white rounded-2xl p-4">
-            <Text className="text-getgrub-navy font-bold mb-3">Party size</Text>
-            <View className="flex-row items-center gap-4">
+          <View style={styles.partySizeCard}>
+            <Text style={styles.partySizeTitle}>Party size</Text>
+            <View style={styles.partySizeRow}>
               <TouchableOpacity
                 onPress={() => setPartySize(Math.max(1, partySize - 1))}
-                className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center"
+                style={styles.partySizeButton}
               >
-                <Text className="text-getgrub-navy font-bold text-lg">−</Text>
+                <Text style={styles.partySizeButtonText}>−</Text>
               </TouchableOpacity>
-              <Text className="text-getgrub-navy font-black text-2xl min-w-[40px] text-center">{partySize}</Text>
+              <Text style={styles.partySizeValue}>{partySize}</Text>
               <TouchableOpacity
                 onPress={() => setPartySize(Math.min(deal.max_party_size ?? 20, partySize + 1))}
-                className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center"
+                style={styles.partySizeButton}
               >
-                <Text className="text-getgrub-navy font-bold text-lg">+</Text>
+                <Text style={styles.partySizeButtonText}>+</Text>
               </TouchableOpacity>
-              <Text className="text-gray-500 text-sm">people</Text>
+              <Text style={styles.partySizeLabel}>people</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
       {/* CTA */}
-      <View className="px-4 pb-6 pt-3 bg-getgrub-cream border-t border-gray-100">
+      <View style={styles.ctaBar}>
         <TouchableOpacity
           onPress={handleClaim}
           disabled={isClaiming || !isValidNow}
-          className={`rounded-2xl py-4 items-center ${isValidNow ? 'bg-getgrub-coral' : 'bg-gray-300'} ${isClaiming ? 'opacity-50' : ''}`}
+          style={[
+            styles.claimButton,
+            isValidNow ? styles.claimButtonActive : styles.claimButtonInactive,
+            isClaiming && styles.claimButtonDisabled,
+          ]}
         >
           {isClaiming ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white font-bold text-lg">
+            <Text style={styles.claimButtonText}>
               {isValidNow ? 'Claim this deal' : 'Not available now'}
             </Text>
           )}
@@ -163,3 +166,164 @@ export default function DealDetailScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf8',
+  },
+  loadingScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fafaf8',
+  },
+  content: {
+    padding: 16,
+    gap: 16,
+  },
+  restaurantRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  restaurantInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  restaurantName: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1a1a2e',
+  },
+  cuisineText: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  addressText: {
+    color: '#9ca3af',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  description: {
+    color: '#4b5563',
+  },
+  dealHighlight: {
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  dealHighlightActive: {
+    backgroundColor: '#e8593c',
+  },
+  dealHighlightInactive: {
+    backgroundColor: '#e5e7eb',
+  },
+  dealTitle: {
+    fontWeight: '900',
+    fontSize: 24,
+  },
+  dealTitleActive: {
+    color: '#ffffff',
+  },
+  dealTitleInactive: {
+    color: '#6b7280',
+  },
+  dealDesc: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  dealDescActive: {
+    color: 'rgba(255,255,255,0.8)',
+  },
+  dealDescInactive: {
+    color: '#9ca3af',
+  },
+  notAvailableText: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginTop: 8,
+  },
+  detailsCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+  },
+  detailsTitle: {
+    color: '#1a1a2e',
+    fontWeight: '700',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  partySizeCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+  },
+  partySizeTitle: {
+    color: '#1a1a2e',
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  partySizeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  partySizeButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  partySizeButtonText: {
+    color: '#1a1a2e',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+  partySizeValue: {
+    color: '#1a1a2e',
+    fontWeight: '900',
+    fontSize: 24,
+    minWidth: 40,
+    textAlign: 'center',
+  },
+  partySizeLabel: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  ctaBar: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    paddingTop: 12,
+    backgroundColor: '#fafaf8',
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  claimButton: {
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  claimButtonActive: {
+    backgroundColor: '#e8593c',
+  },
+  claimButtonInactive: {
+    backgroundColor: '#d1d5db',
+  },
+  claimButtonDisabled: {
+    opacity: 0.5,
+  },
+  claimButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+});
