@@ -1,145 +1,143 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useDeals } from '../../hooks/useDeals';
 import { useUserStore } from '../../stores/userStore';
-import { useAuthStore } from '../../stores/authStore';
 import { DealList } from '../../components/deals/DealList';
-import { supabase } from '../../lib/supabase';
-import type { UserProfile, City } from '../../types';
+import { FilterDrawer } from '../../components/ui/FilterDrawer';
 
-const CUISINE_FILTERS = [
-  { label: 'All', value: 'all' },
-  { label: 'British', value: 'british' },
-  { label: 'Indian', value: 'indian' },
-  { label: 'Italian', value: 'italian' },
-  { label: 'Vegan', value: 'vegan' },
-  { label: 'Burgers', value: 'burgers' },
+const CATEGORIES = [
+  { label: 'All', value: 'all', emoji: '🍽️' },
+  { label: 'British', value: 'british', emoji: '🫖' },
+  { label: 'Indian', value: 'indian', emoji: '🍛' },
+  { label: 'Italian', value: 'italian', emoji: '🍕' },
+  { label: 'Vegan', value: 'vegan', emoji: '🥗' },
+  { label: 'Burgers', value: 'burgers', emoji: '🍔' },
+  { label: 'Chinese', value: 'chinese', emoji: '🥡' },
 ];
 
+interface Filters {
+  cuisine: string;
+  dietary: string[];
+  minDiscount: string;
+}
+
+const DEFAULT_FILTERS: Filters = { cuisine: 'All', dietary: [], minDiscount: 'Any' };
+
 export default function HomeScreen() {
-  const { user } = useAuthStore();
-  const { profile, setProfile } = useUserStore();
-  const [cuisineFilter, setCuisineFilter] = useState('all');
-  const [city, setCity] = useState<City | null>(null);
+  const { profile } = useUserStore();
+  const [category, setCategory] = useState('all');
+  const [showFilter, setShowFilter] = useState(false);
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
-        if (data) setProfile(data as UserProfile);
-      });
-  }, [user]);
+  const activeFilterCount = [
+    filters.cuisine !== 'All' ? 1 : 0,
+    filters.dietary.length,
+    filters.minDiscount !== 'Any' ? 1 : 0,
+  ].reduce((a, b) => a + b, 0);
 
-  useEffect(() => {
-    if (!profile?.city_id) return;
-    supabase
-      .from('cities')
-      .select('*')
-      .eq('id', profile.city_id)
-      .single()
-      .then(({ data }) => {
-        if (data) setCity(data as City);
-      });
-  }, [profile?.city_id]);
+  const { data: deals = [], isLoading, refetch, isRefetching } = useDeals(
+    profile?.city_id ?? undefined,
+    category,
+  );
 
-  const { data: deals = [], isLoading, refetch, isRefetching } = useDeals(profile?.city_id, cuisineFilter);
+  const filteredDeals = deals.filter(deal => {
+    if (filters.dietary.length > 0) {
+      const hasAll = filters.dietary.every(tag =>
+        deal.restaurant?.dietary_tags?.map(t => t.toLowerCase()).includes(tag.toLowerCase())
+      );
+      if (!hasAll) return false;
+    }
+    if (filters.minDiscount !== 'Any') {
+      const min = parseInt(filters.minDiscount);
+      if (deal.discount_percent < min) return false;
+    }
+    return true;
+  });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
+    <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Get Grub</Text>
-        {city && (
-          <Text style={styles.headerSub}>{city.name} · {deals.length} deals available</Text>
-        )}
+        <View>
+          <Text style={styles.logo}>GET GRUB</Text>
+          <Text style={styles.tagline}>{filteredDeals.length} deals near you</Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.filterBtn, activeFilterCount > 0 && styles.filterBtnActive]}
+          onPress={() => setShowFilter(true)}
+        >
+          <Ionicons name="options-outline" size={18} color={activeFilterCount > 0 ? '#fff' : '#1a1a2e'} />
+          <Text style={[styles.filterBtnText, activeFilterCount > 0 && styles.filterBtnTextActive]}>
+            Filter
+          </Text>
+          {activeFilterCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
-      {/* Cuisine filter chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        {CUISINE_FILTERS.map(f => (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRow}>
+        {CATEGORIES.map(cat => (
           <TouchableOpacity
-            key={f.value}
-            onPress={() => setCuisineFilter(f.value)}
-            style={[
-              styles.filterChip,
-              cuisineFilter === f.value ? styles.filterChipActive : styles.filterChipInactive,
-            ]}
+            key={cat.value}
+            onPress={() => setCategory(cat.value)}
+            style={[styles.chip, category === cat.value && styles.chipActive]}
           >
-            <Text style={[
-              styles.filterChipText,
-              cuisineFilter === f.value ? styles.filterChipTextActive : styles.filterChipTextInactive,
-            ]}>
-              {f.label}
-            </Text>
+            <Text style={styles.chipEmoji}>{cat.emoji}</Text>
+            <Text style={[styles.chipText, category === cat.value && styles.chipTextActive]}>{cat.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       <DealList
-        deals={deals}
+        deals={filteredDeals}
         isLoading={isLoading}
         isRefreshing={isRefetching}
         onRefresh={refetch}
         userDietaryTags={profile?.dietary_tags}
+      />
+
+      <FilterDrawer
+        visible={showFilter}
+        filters={filters}
+        onApply={(f) => { setFilters(f); setShowFilter(false); }}
+        onClose={() => setShowFilter(false)}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fafaf8',
-  },
+  safe: { flex: 1, backgroundColor: '#F5F5F5' },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12, backgroundColor: '#FF0000',
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#1a1a2e',
+  logo: { fontSize: 22, fontWeight: '900', color: '#F5F0E8', letterSpacing: 1 },
+  tagline: { fontSize: 12, color: 'rgba(245,240,232,0.8)', marginTop: 1 },
+  filterBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#F5F0E8', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8,
   },
-  headerSub: {
-    color: '#6b7280',
-    fontSize: 14,
+  filterBtnActive: { backgroundColor: '#1a1a2e' },
+  filterBtnText: { fontWeight: '600', fontSize: 14, color: '#1a1a2e' },
+  filterBtnTextActive: { color: '#fff' },
+  badge: {
+    backgroundColor: '#FF0000', borderRadius: 999, width: 18, height: 18,
+    alignItems: 'center', justifyContent: 'center',
   },
-  filterRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
+  badgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  categoryRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999,
+    paddingHorizontal: 14, paddingVertical: 8, backgroundColor: '#fff',
+    borderWidth: 1, borderColor: '#e5e7eb',
   },
-  filterChip: {
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  filterChipActive: {
-    backgroundColor: '#e8593c',
-  },
-  filterChipInactive: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  filterChipText: {
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  filterChipTextActive: {
-    color: '#ffffff',
-  },
-  filterChipTextInactive: {
-    color: '#1a1a2e',
-  },
+  chipActive: { backgroundColor: '#FF0000', borderColor: '#FF0000' },
+  chipEmoji: { fontSize: 14 },
+  chipText: { fontWeight: '500', fontSize: 13, color: '#1a1a2e' },
+  chipTextActive: { color: '#fff' },
 });
