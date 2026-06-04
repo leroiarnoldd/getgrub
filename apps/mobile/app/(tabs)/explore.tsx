@@ -10,6 +10,8 @@ import type { DealWithRestaurant } from '../../types';
 
 const CATEGORIES = [
   { label: 'All', value: 'all' },
+  { label: 'Caribbean', value: 'caribbean' },
+  { label: 'African', value: 'african' },
   { label: 'British', value: 'british' },
   { label: 'Indian', value: 'indian' },
   { label: 'Italian', value: 'italian' },
@@ -35,6 +37,7 @@ export default function ExploreScreen() {
         <Text style={styles.sub}>{deals.length} deals available</Text>
       </View>
 
+      {/* Category filter */}
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -54,6 +57,7 @@ export default function ExploreScreen() {
         style={styles.categoryList}
       />
 
+      {/* Deal grid */}
       <FlatList
         data={deals}
         keyExtractor={(item) => item.id}
@@ -119,15 +123,26 @@ const styles = StyleSheet.create({
   grid: { paddingHorizontal: 12, paddingBottom: 100 },
   row: { gap: 12, marginBottom: 12 },
   gridCard: {
-    flex: 1, borderRadius: 14, overflow: 'hidden', backgroundColor: '#fff',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   gridImage: { width: '100%', height: 140 },
   placeholder: { backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
   gridBadge: {
-    position: 'absolute', top: 8, left: 8, backgroundColor: '#FF0000',
-    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#FF0000',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   gridBadgeText: { color: '#fff', fontWeight: '800', fontSize: 11 },
   gridBody: { padding: 10 },
