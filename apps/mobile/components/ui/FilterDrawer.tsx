@@ -4,7 +4,7 @@ import {
   ScrollView, StyleSheet, Pressable,
 } from 'react-native';
 
-const CUISINE_OPTIONS = ['All', 'British', 'Indian', 'Italian', 'Vegan', 'Burgers', 'Chinese', 'Mexican'];
+const CUISINE_OPTIONS = ['All', 'Caribbean', 'African', 'British', 'Indian', 'Italian', 'Vegan', 'Burgers', 'Chinese', 'Mexican'];
 const DIETARY_OPTIONS = ['Vegan', 'Vegetarian', 'Halal', 'Gluten-free'];
 const DISCOUNT_OPTIONS = ['Any', '10%+', '20%+', '30%+', '50%+'];
 
@@ -28,9 +28,17 @@ export function FilterDrawer({ visible, filters, onApply, onClose }: Props) {
   useEffect(() => {
     if (visible) {
       localFilters.current = { ...filters };
-      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 0 }).start();
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 0,
+      }).start();
     } else {
-      Animated.timing(slideAnim, { toValue: 500, duration: 250, useNativeDriver: true }).start();
+      Animated.timing(slideAnim, {
+        toValue: 500,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
     }
   }, [visible]);
 
@@ -50,6 +58,7 @@ export function FilterDrawer({ visible, filters, onApply, onClose }: Props) {
               single
             />
           </Section>
+
           <Section label="Dietary">
             <ChipGroup
               options={DIETARY_OPTIONS}
@@ -63,6 +72,7 @@ export function FilterDrawer({ visible, filters, onApply, onClose }: Props) {
               }}
             />
           </Section>
+
           <Section label="Minimum discount">
             <ChipGroup
               options={DISCOUNT_OPTIONS}
@@ -122,33 +132,97 @@ function ChipGroup({ options, selected, onSelect, single }: {
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
   sheet: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingHorizontal: 20, paddingBottom: 40, maxHeight: '80%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    maxHeight: '80%',
   },
   handle: {
-    width: 40, height: 4, backgroundColor: '#e5e7eb', borderRadius: 2,
-    alignSelf: 'center', marginTop: 12, marginBottom: 16,
+    width: 40,
+    height: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 16,
   },
-  title: { fontSize: 18, fontWeight: '800', color: '#1a1a2e', marginBottom: 16 },
-  section: { marginBottom: 20 },
+  title: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1a1a2e',
+    marginBottom: 16,
+  },
+  section: {
+    marginBottom: 20,
+  },
   sectionLabel: {
-    fontSize: 13, fontWeight: '600', color: '#6b7280',
-    textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#f3f4f6' },
-  chipActive: { backgroundColor: '#FF0000' },
-  chipText: { fontSize: 14, fontWeight: '500', color: '#1a1a2e' },
-  chipTextActive: { color: '#fff' },
-  actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  chipActive: {
+    backgroundColor: '#FF0000',
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1a1a2e',
+  },
+  chipTextActive: {
+    color: '#fff',
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
   resetBtn: {
-    flex: 1, paddingVertical: 14, borderRadius: 14,
-    borderWidth: 1, borderColor: '#e5e7eb', alignItems: 'center',
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    alignItems: 'center',
   },
-  resetText: { fontWeight: '600', color: '#1a1a2e' },
-  applyBtn: { flex: 2, paddingVertical: 14, borderRadius: 14, backgroundColor: '#FF0000', alignItems: 'center' },
-  applyText: { fontWeight: '700', color: '#fff', fontSize: 15 },
+  resetText: {
+    fontWeight: '600',
+    color: '#1a1a2e',
+  },
+  applyBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#FF0000',
+    alignItems: 'center',
+  },
+  applyText: {
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 15,
+  },
 });

@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { useDeal } from '../../hooks/useDeals';
 import { useClaimDeal } from '../../hooks/useClaim';
-import { RestaurantHero } from '../../components/restaurant/RestaurantHero';
-import { ReliabilityBadge } from '../../components/ui/ReliabilityBadge';
 import { DietaryTags } from '../../components/ui/DietaryTags';
-import { Badge } from '../../components/ui/Badge';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 import { useUserStore } from '../../stores/userStore';
@@ -20,7 +19,7 @@ export default function DealDetailScreen() {
   const { user } = useAuthStore();
   const { profile } = useUserStore();
   const { data: deal, isLoading } = useDeal(id);
-  const { mutateAsync: claimDeal, isPending: isClaiming, claimId } = useClaimDeal();
+  const { mutateAsync: claimDeal, isPending: isClaiming } = useClaimDeal();
   const [partySize, setPartySize] = useState(2);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -28,11 +27,7 @@ export default function DealDetailScreen() {
     if (!deal || !user) return;
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const claim = await claimDeal({
-        dealId: deal.id,
-        restaurantId: deal.restaurant_id,
-        partySize,
-      });
+      const claim = await claimDeal({ dealId: deal.id, restaurantId: deal.restaurant_id, partySize });
       router.push(`/claim/${claim.id}`);
     } catch (e: unknown) {
       Alert.alert('Could not claim deal', e instanceof Error ? e.message : 'Please try again');
@@ -42,24 +37,18 @@ export default function DealDetailScreen() {
   const handleToggleSave = async () => {
     if (!user || !deal) return;
     if (isSaved) {
-      await supabase
-        .from('saved_deals')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('deal_id', deal.id);
+      await supabase.from('saved_deals').delete().eq('user_id', user.id).eq('deal_id', deal.id);
       setIsSaved(false);
     } else {
-      await supabase
-        .from('saved_deals')
-        .insert({ user_id: user.id, deal_id: deal.id });
+      await supabase.from('saved_deals').insert({ user_id: user.id, deal_id: deal.id });
       setIsSaved(true);
     }
   };
 
   if (isLoading || !deal) {
     return (
-      <SafeAreaView style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color="#e8593c" />
+      <SafeAreaView style={styles.loading}>
+        <ActivityIndicator size="large" color="#FF0000" />
       </SafeAreaView>
     );
   }
@@ -68,97 +57,86 @@ export default function DealDetailScreen() {
   const isValidNow = isDealValidNow(deal);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView>
-        <RestaurantHero restaurant={r} isSaved={isSaved} onToggleSave={handleToggleSave} />
+        <View style={styles.heroWrap}>
+          {r.cover_image_url ? (
+            <Image source={r.cover_image_url} style={styles.heroImage} contentFit="cover" transition={300} />
+          ) : (
+            <View style={[styles.heroImage, styles.heroPlaceholder]}>
+              <Text style={{ fontSize: 64 }}>🍽️</Text>
+            </View>
+          )}
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={20} color="#1a1a2e" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.saveBtn} onPress={handleToggleSave}>
+            <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={20} color={isSaved ? '#FF0000' : '#1a1a2e'} />
+          </TouchableOpacity>
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountText}>{deal.discount_percent}% OFF</Text>
+          </View>
+        </View>
 
         <View style={styles.content}>
-          {/* Restaurant info */}
-          <View style={styles.restaurantRow}>
-            <View style={styles.restaurantInfo}>
-              <Text style={styles.restaurantName}>{r.name}</Text>
-              <Text style={styles.cuisineText}>
-                {r.cuisine_tags.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' · ')}
-              </Text>
-              {r.address && (
-                <Text style={styles.addressText}>{r.address}</Text>
-              )}
-            </View>
-            <ReliabilityBadge score={r.reliability_score} />
-          </View>
-
-          {r.description && (
-            <Text style={styles.description}>{r.description}</Text>
-          )}
-
-          {/* Deal highlight */}
-          <View style={[styles.dealHighlight, isValidNow ? styles.dealHighlightActive : styles.dealHighlightInactive]}>
-            <Text style={[styles.dealTitle, isValidNow ? styles.dealTitleActive : styles.dealTitleInactive]}>
-              {deal.title}
+          <View>
+            <Text style={styles.restaurantName}>{r.name}</Text>
+            <Text style={styles.cuisineText}>
+              {r.cuisine_tags.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(' · ')}
             </Text>
-            {deal.description && (
-              <Text style={[styles.dealDesc, isValidNow ? styles.dealDescActive : styles.dealDescInactive]}>
-                {deal.description}
-              </Text>
-            )}
-            {!isValidNow && (
-              <Text style={styles.notAvailableText}>Not available right now</Text>
-            )}
+            {r.address && <Text style={styles.addressText}>📍 {r.address}</Text>}
           </View>
 
-          {/* Deal details */}
-          <View style={styles.detailsCard}>
-            <Text style={styles.detailsTitle}>Deal details</Text>
-            <View style={styles.badgeRow}>
-              <Badge label={`Valid: ${formatDaysRange(deal.valid_days)}`} color="navy" />
+          {r.description && <Text style={styles.description}>{r.description}</Text>}
+
+          <View style={[styles.dealBox, isValidNow ? styles.dealBoxActive : styles.dealBoxInactive]}>
+            <Text style={[styles.dealTitle, !isValidNow && styles.dealTitleInactive]}>{deal.title}</Text>
+            {deal.description && (
+              <Text style={[styles.dealDesc, !isValidNow && styles.dealDescInactive]}>{deal.description}</Text>
+            )}
+            {!isValidNow && <Text style={styles.notAvailable}>Not available right now</Text>}
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Deal details</Text>
+            <View style={styles.detailRows}>
+              <DetailRow icon="calendar-outline" label={`Valid ${formatDaysRange(deal.valid_days)}`} />
               {deal.valid_from && deal.valid_until && (
-                <Badge label={`${deal.valid_from}–${deal.valid_until}`} color="gray" />
+                <DetailRow icon="time-outline" label={`${deal.valid_from} – ${deal.valid_until}`} />
               )}
-              {deal.includes_drinks && <Badge label="Drinks included" color="teal" />}
-              {deal.min_spend && <Badge label={`Min spend £${deal.min_spend}`} color="gray" />}
+              {deal.includes_drinks && <DetailRow icon="wine-outline" label="Drinks included" />}
+              {deal.min_spend && <DetailRow icon="cash-outline" label={`Min spend £${deal.min_spend}`} />}
+              {deal.max_party_size && <DetailRow icon="people-outline" label={`Up to ${deal.max_party_size} people`} />}
             </View>
             <DietaryTags tags={r.dietary_tags} userDietaryTags={profile?.dietary_tags} />
           </View>
 
-          {/* Party size */}
-          <View style={styles.partySizeCard}>
-            <Text style={styles.partySizeTitle}>Party size</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Party size</Text>
             <View style={styles.partySizeRow}>
-              <TouchableOpacity
-                onPress={() => setPartySize(Math.max(1, partySize - 1))}
-                style={styles.partySizeButton}
-              >
-                <Text style={styles.partySizeButtonText}>−</Text>
+              <TouchableOpacity onPress={() => setPartySize(Math.max(1, partySize - 1))} style={styles.sizeBtn}>
+                <Text style={styles.sizeBtnText}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.partySizeValue}>{partySize}</Text>
-              <TouchableOpacity
-                onPress={() => setPartySize(Math.min(deal.max_party_size ?? 20, partySize + 1))}
-                style={styles.partySizeButton}
-              >
-                <Text style={styles.partySizeButtonText}>+</Text>
+              <Text style={styles.sizeValue}>{partySize} people</Text>
+              <TouchableOpacity onPress={() => setPartySize(Math.min(deal.max_party_size ?? 20, partySize + 1))} style={styles.sizeBtn}>
+                <Text style={styles.sizeBtnText}>+</Text>
               </TouchableOpacity>
-              <Text style={styles.partySizeLabel}>people</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      {/* CTA */}
       <View style={styles.ctaBar}>
         <TouchableOpacity
           onPress={handleClaim}
           disabled={isClaiming || !isValidNow}
-          style={[
-            styles.claimButton,
-            isValidNow ? styles.claimButtonActive : styles.claimButtonInactive,
-            isClaiming && styles.claimButtonDisabled,
-          ]}
+          style={[styles.claimBtn, !isValidNow && styles.claimBtnDisabled]}
         >
           {isClaiming ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.claimButtonText}>
-              {isValidNow ? 'Claim this deal' : 'Not available now'}
+            <Text style={styles.claimBtnText}>
+              {isValidNow ? `Claim deal · ${deal.discount_percent}% off` : 'Not available now'}
             </Text>
           )}
         </TouchableOpacity>
@@ -167,163 +145,49 @@ export default function DealDetailScreen() {
   );
 }
 
+function DetailRow({ icon, label }: { icon: string; label: string }) {
+  return (
+    <View style={styles.detailRow}>
+      <Ionicons name={icon as any} size={16} color="#6b7280" />
+      <Text style={styles.detailLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fafaf8',
-  },
-  loadingScreen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fafaf8',
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-  },
-  restaurantRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  restaurantInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  restaurantName: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#1a1a2e',
-  },
-  cuisineText: {
-    color: '#6b7280',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  addressText: {
-    color: '#9ca3af',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  description: {
-    color: '#4b5563',
-  },
-  dealHighlight: {
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  dealHighlightActive: {
-    backgroundColor: '#e8593c',
-  },
-  dealHighlightInactive: {
-    backgroundColor: '#e5e7eb',
-  },
-  dealTitle: {
-    fontWeight: '900',
-    fontSize: 24,
-  },
-  dealTitleActive: {
-    color: '#ffffff',
-  },
-  dealTitleInactive: {
-    color: '#6b7280',
-  },
-  dealDesc: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  dealDescActive: {
-    color: 'rgba(255,255,255,0.8)',
-  },
-  dealDescInactive: {
-    color: '#9ca3af',
-  },
-  notAvailableText: {
-    color: '#6b7280',
-    fontSize: 14,
-    marginTop: 8,
-  },
-  detailsCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    gap: 12,
-  },
-  detailsTitle: {
-    color: '#1a1a2e',
-    fontWeight: '700',
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  partySizeCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-  },
-  partySizeTitle: {
-    color: '#1a1a2e',
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  partySizeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  partySizeButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  partySizeButtonText: {
-    color: '#1a1a2e',
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  partySizeValue: {
-    color: '#1a1a2e',
-    fontWeight: '900',
-    fontSize: 24,
-    minWidth: 40,
-    textAlign: 'center',
-  },
-  partySizeLabel: {
-    color: '#6b7280',
-    fontSize: 14,
-  },
-  ctaBar: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-    paddingTop: 12,
-    backgroundColor: '#fafaf8',
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-  },
-  claimButton: {
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  claimButtonActive: {
-    backgroundColor: '#e8593c',
-  },
-  claimButtonInactive: {
-    backgroundColor: '#d1d5db',
-  },
-  claimButtonDisabled: {
-    opacity: 0.5,
-  },
-  claimButtonText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 18,
-  },
+  safe: { flex: 1, backgroundColor: '#FAFAF5' },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAFAF5' },
+  heroWrap: { position: 'relative' },
+  heroImage: { width: '100%', height: 300 },
+  heroPlaceholder: { backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
+  backBtn: { position: 'absolute', top: 52, left: 16, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 20, padding: 8 },
+  saveBtn: { position: 'absolute', top: 52, right: 16, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 20, padding: 8 },
+  discountBadge: { position: 'absolute', bottom: 16, left: 16, backgroundColor: '#FF0000', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
+  discountText: { color: '#fff', fontWeight: '900', fontSize: 16 },
+  content: { padding: 20, gap: 16 },
+  restaurantName: { fontSize: 26, fontWeight: '900', color: '#1a1a2e' },
+  cuisineText: { color: '#6b7280', fontSize: 14, marginTop: 4 },
+  addressText: { color: '#9ca3af', fontSize: 13, marginTop: 4 },
+  description: { color: '#4b5563', fontSize: 14, lineHeight: 20 },
+  dealBox: { borderRadius: 16, padding: 18 },
+  dealBoxActive: { backgroundColor: '#FF0000' },
+  dealBoxInactive: { backgroundColor: '#f3f4f6' },
+  dealTitle: { fontWeight: '900', fontSize: 22, color: '#fff' },
+  dealTitleInactive: { color: '#6b7280' },
+  dealDesc: { color: 'rgba(255,255,255,0.85)', fontSize: 14, marginTop: 6 },
+  dealDescInactive: { color: '#9ca3af' },
+  notAvailable: { color: '#9ca3af', fontSize: 13, marginTop: 8 },
+  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, gap: 12 },
+  cardTitle: { fontWeight: '700', color: '#1a1a2e', fontSize: 15 },
+  detailRows: { gap: 8 },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  detailLabel: { color: '#4b5563', fontSize: 14 },
+  partySizeRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  sizeBtn: { width: 44, height: 44, backgroundColor: '#f3f4f6', borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  sizeBtnText: { fontSize: 20, fontWeight: '700', color: '#1a1a2e' },
+  sizeValue: { fontSize: 18, fontWeight: '700', color: '#1a1a2e', flex: 1, textAlign: 'center' },
+  ctaBar: { padding: 20, paddingBottom: 32, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#f3f4f6' },
+  claimBtn: { backgroundColor: '#FF0000', borderRadius: 16, paddingVertical: 18, alignItems: 'center' },
+  claimBtnDisabled: { backgroundColor: '#d1d5db' },
+  claimBtnText: { color: '#fff', fontWeight: '800', fontSize: 17 },
 });
