@@ -1,55 +1,72 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../stores/authStore';
+import { Tabs, Redirect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../../stores/authStore';
+import { View, ActivityIndicator } from 'react-native';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      retry: 2,
-    },
-  },
-});
+export default function TabsLayout() {
+  const { user, isLoading } = useAuthStore();
 
-function RootLayoutInner() {
-  const { setSession, setLoading } = useAuthStore();
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAFAF5' }}>
+        <ActivityIndicator color="#FF0000" size="large" />
+      </View>
+    );
+  }
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="deal/[id]" options={{ presentation: 'card' }} />
-      <Stack.Screen name="restaurant/[id]" options={{ presentation: 'card' }} />
-      <Stack.Screen name="claim/[id]" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="feedback/[claimId]" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
-
-export default function RootLayout() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <RootLayoutInner />
-      </SafeAreaProvider>
-    </QueryClientProvider>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#1a1a2e',
+        tabBarInactiveTintColor: '#9ca3af',
+        tabBarStyle: {
+          backgroundColor: '#FAFAF5',
+          borderTopColor: '#e5e7eb',
+          borderTopWidth: 1,
+          height: 68,
+          paddingBottom: 12,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          tabBarLabel: 'Explore',
+          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="saved"
+        options={{
+          tabBarLabel: 'Saved',
+          tabBarIcon: ({ color, size }) => <Ionicons name="heart-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarLabel: 'My Offers',
+          tabBarIcon: ({ color, size }) => <Ionicons name="ticket-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen name="search" options={{ href: null }} />
+    </Tabs>
   );
 }
