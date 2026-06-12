@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { Overview } from './pages/Overview';
 import { Deals } from './pages/Deals';
+import { Slots } from './pages/Slots';
 import { Feedback } from './pages/Feedback';
 import { Billing } from './pages/Billing';
 import { Settings } from './pages/Settings';
@@ -72,6 +73,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { to: '/overview', label: 'Overview' },
     { to: '/deals', label: 'Deals' },
+    { to: '/slots', label: 'Slots' },
     { to: '/feedback', label: 'Feedback' },
     { to: '/billing', label: 'Billing' },
     { to: '/settings', label: 'Settings' },
@@ -154,6 +156,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/overview" replace />} />
           <Route path="/overview" element={<Overview />} />
           <Route path="/deals" element={<Deals />} />
+          <Route path="/slots" element={<Slots />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/settings" element={<Settings />} />
