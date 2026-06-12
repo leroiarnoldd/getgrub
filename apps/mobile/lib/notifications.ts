@@ -5,7 +5,8 @@ import { supabase } from './supabase';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -65,7 +66,10 @@ export async function scheduleLocalNotification(params: {
       sound: true,
     },
     trigger: params.triggerSeconds
-      ? { seconds: params.triggerSeconds }
+      ? {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: params.triggerSeconds,
+        }
       : null,
   });
 }
