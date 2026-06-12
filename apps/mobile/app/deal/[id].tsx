@@ -6,11 +6,13 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useDeal } from '../../hooks/useDeals';
 import { useClaimDeal } from '../../hooks/useClaim';
+import { useDealSlots, useBookSlot } from '../../hooks/useSlots';
+import { SlotPicker } from '../../components/deals/SlotPicker';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 import { isDealValidNow } from '../../lib/utils';
 import * as Haptics from 'expo-haptics';
-import type { DealWithRestaurant } from '../../types';
+import type { DealWithRestaurant, DealSlot } from '../../types';
 
 function spotsLeft(deal: DealWithRestaurant) {
   if (!deal.max_daily_claims) return null;
@@ -22,18 +24,29 @@ export default function DealDetailScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { data: deal, isLoading } = useDeal(id);
+  const { data: slots = [] } = useDealSlots(id);
   const { mutateAsync: claimDeal, isPending: isClaiming } = useClaimDeal();
+  const { mutateAsync: bookSlot, isPending: isBooking } = useBookSlot();
   const [partySize, setPartySize] = useState(2);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<DealSlot | null>(null);
+
+  const hasSlots = slots.length > 0;
 
   const handleClaim = async () => {
     if (!deal || !user) return;
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const claim = await claimDeal({ dealId: deal.id, restaurantId: deal.restaurant_id, partySize });
+      const claim = hasSlots
+        ? await bookSlot({ slotId: selectedSlot!.id, partySize })
+        : await claimDeal({ dealId: deal.id, restaurantId: deal.restaurant_id, partySize });
       router.push(`/claim/${claim.id}`);
     } catch (e: unknown) {
-      Alert.alert('Could not claim deal', e instanceof Error ? e.message : 'Please try again');
+      setSelectedSlot(null);
+      Alert.alert(
+        hasSlots ? 'Could not book table' : 'Could not claim deal',
+        e instanceof Error ? e.message : 'Please try again'
+      );
     }
   };
 
@@ -64,6 +77,8 @@ export default function DealDetailScreen() {
   const r = deal.restaurant;
   const isValidNow = isDealValidNow(deal);
   const spots = spotsLeft(deal);
+  const isBusy = isClaiming || isBooking;
+  const canRedeem = hasSlots ? !!selectedSlot : isValidNow;
   const cuisineLabel = r.cuisine_tags.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
 
   return (
@@ -158,32 +173,54 @@ export default function DealDetailScreen() {
 
           <View style={styles.divider} />
 
+          {/* Bookable slots */}
+          {hasSlots && (
+            <>
+              <Text style={styles.sectionTitle}>Pick a time</Text>
+              <SlotPicker
+                slots={slots}
+                selectedSlotId={selectedSlot?.id ?? null}
+                onSelect={setSelectedSlot}
+                baseDiscount={deal.discount_percent}
+              />
+              <View style={styles.divider} />
+            </>
+          )}
+
           {/* Deal card */}
           <View style={styles.dealCard}>
             <View style={styles.dealCardTop}>
               <View style={styles.dealCardLeft}>
                 <View style={styles.dealTitleRow}>
                   <Text style={styles.lightning}>⚡</Text>
-                  <Text style={styles.dealTitle}>{deal.discount_percent}% Off – Dine In</Text>
+                  <Text style={styles.dealTitle}>
+                    {(selectedSlot?.discount_percent ?? deal.discount_percent)}% Off – Dine In
+                  </Text>
                 </View>
-                {deal.valid_from && deal.valid_until && (
-                  <Text style={styles.dealSub}>Arrive before {deal.valid_until}</Text>
+                {hasSlots ? (
+                  <Text style={styles.dealSub}>
+                    {selectedSlot ? 'Table held for 15 min after start time' : 'Pick a time above to book'}
+                  </Text>
+                ) : (
+                  deal.valid_from && deal.valid_until && (
+                    <Text style={styles.dealSub}>Arrive before {deal.valid_until}</Text>
+                  )
                 )}
-                {spots !== null && spots <= 5 && (
+                {!hasSlots && spots !== null && spots <= 5 && (
                   <View style={styles.spotsBadge}>
                     <Text style={styles.spotsText}>{spots} Left</Text>
                   </View>
                 )}
               </View>
               <TouchableOpacity
-                style={[styles.redeemBtn, (!isValidNow || isClaiming) && styles.redeemBtnDisabled]}
+                style={[styles.redeemBtn, (!canRedeem || isBusy) && styles.redeemBtnDisabled]}
                 onPress={handleClaim}
-                disabled={!isValidNow || isClaiming}
+                disabled={!canRedeem || isBusy}
               >
-                {isClaiming ? (
+                {isBusy ? (
                   <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Text style={styles.redeemBtnText}>Redeem</Text>
+                  <Text style={styles.redeemBtnText}>{hasSlots ? 'Book' : 'Redeem'}</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -233,6 +270,7 @@ const styles = StyleSheet.create({
   openText: { fontSize: 14, fontWeight: '700', color: '#16a34a' },
   closedText: { fontSize: 14, fontWeight: '700', color: '#dc2626' },
   infoSub: { fontSize: 12, color: '#6b7280', lineHeight: 18 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#1a1a2e', marginBottom: 4 },
   partySizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   partySizeLabel: { fontSize: 15, fontWeight: '600', color: '#1a1a2e' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },

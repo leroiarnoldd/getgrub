@@ -60,3 +60,21 @@ values
   array['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],
   '09:00', '21:00', true
 );
+
+-- Dev slots: an early-bird and a late window for each active deal over the next 7 days
+insert into deal_slots (deal_id, restaurant_id, starts_at, ends_at, total_covers)
+select d.id, d.restaurant_id,
+       (current_date + i)::timestamp + time '17:00',
+       (current_date + i)::timestamp + time '18:30',
+       12
+from deals d, generate_series(0, 6) as i
+where d.is_active;
+
+insert into deal_slots (deal_id, restaurant_id, starts_at, ends_at, total_covers, discount_percent)
+select d.id, d.restaurant_id,
+       (current_date + i)::timestamp + time '20:30',
+       (current_date + i)::timestamp + time '22:00',
+       8,
+       least(50, d.discount_percent + 10)
+from deals d, generate_series(0, 6) as i
+where d.is_active;

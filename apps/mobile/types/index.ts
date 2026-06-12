@@ -61,6 +61,20 @@ export interface DealWithRestaurant extends Deal {
   restaurant: Restaurant;
 }
 
+export interface DealSlot {
+  id: string;
+  deal_id: string;
+  restaurant_id: string;
+  starts_at: string;
+  ends_at: string;
+  discount_percent: number | null;
+  total_covers: number;
+  booked_covers: number;
+  status: 'open' | 'paused' | 'closed';
+  created_at: string;
+  updated_at: string;
+}
+
 export interface UserProfile {
   id: string;
   display_name: string | null;
@@ -84,6 +98,7 @@ export interface Claim {
   deal_id: string;
   restaurant_id: string;
   status: 'claimed' | 'redeemed' | 'expired' | 'cancelled';
+  slot_id: string | null;
   voucher_code: string;
   claimed_at: string;
   redeemed_at: string | null;
