@@ -1,7 +1,10 @@
 {
   "name": "getgrub",
   "private": true,
-  "workspaces": ["apps/*", "workers/*"],
+  "workspaces": [
+    "apps/dashboard",
+    "workers/*"
+  ],
   "scripts": {
     "mobile": "cd apps/mobile && npx expo start",
     "dashboard": "cd apps/dashboard && npm run dev",
