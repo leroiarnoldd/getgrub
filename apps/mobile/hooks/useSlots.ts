@@ -38,6 +38,43 @@ export function useSlot(slotId: string | null | undefined) {
   });
 }
 
+export interface NextSlot {
+  starts_at: string;
+  seatsLeft: number;
+  discount: number | null;
+}
+
+// Earliest still-bookable slot per deal, for "tonight 7pm · 4 left" urgency
+// on the home feed. One query for all visible deals.
+export function useUpcomingSlotsByDeal(dealIds: string[]) {
+  const key = [...dealIds].sort().join(',');
+  return useQuery({
+    queryKey: ['upcoming-slots', key],
+    queryFn: async (): Promise<Record<string, NextSlot>> => {
+      if (dealIds.length === 0) return {};
+      const { data, error } = await supabase
+        .from('deal_slots')
+        .select('deal_id, starts_at, total_covers, booked_covers, discount_percent')
+        .in('deal_id', dealIds)
+        .eq('status', 'open')
+        .gt('ends_at', new Date().toISOString())
+        .order('starts_at', { ascending: true });
+      if (error) throw error;
+      const map: Record<string, NextSlot> = {};
+      for (const s of data ?? []) {
+        const seatsLeft = s.total_covers - s.booked_covers;
+        if (seatsLeft <= 0) continue;
+        if (!map[s.deal_id]) {
+          map[s.deal_id] = { starts_at: s.starts_at, seatsLeft, discount: s.discount_percent };
+        }
+      }
+      return map;
+    },
+    enabled: dealIds.length > 0,
+    refetchInterval: 60_000,
+  });
+}
+
 export function useBookSlot() {
   const queryClient = useQueryClient();
 

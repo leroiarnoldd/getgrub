@@ -13,3 +13,7 @@ export const colors = {
   success: '#16A34A',
   danger: '#DC2626',
 } as const;
+
+// One flat, transparent booking fee — shown before you book, charged only on a
+// successful booking. No percentage fees (our core difference vs EatClub).
+export const BOOKING_FEE_GBP = 1.5;

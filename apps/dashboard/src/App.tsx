@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 import { Overview } from './pages/Overview';
 import { Deals } from './pages/Deals';
 import { Slots } from './pages/Slots';
+import { Bookings } from './pages/Bookings';
 import { Feedback } from './pages/Feedback';
 import { Billing } from './pages/Billing';
 import { Settings } from './pages/Settings';
@@ -74,6 +75,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
     { to: '/overview', label: 'Overview' },
     { to: '/deals', label: 'Deals' },
     { to: '/slots', label: 'Slots' },
+    { to: '/bookings', label: 'Bookings' },
     { to: '/feedback', label: 'Feedback' },
     { to: '/billing', label: 'Billing' },
     { to: '/settings', label: 'Settings' },
@@ -157,6 +159,7 @@ export default function App() {
           <Route path="/overview" element={<Overview />} />
           <Route path="/deals" element={<Deals />} />
           <Route path="/slots" element={<Slots />} />
+          <Route path="/bookings" element={<Bookings />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/settings" element={<Settings />} />

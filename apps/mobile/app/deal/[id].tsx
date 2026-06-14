@@ -11,6 +11,7 @@ import { SlotPicker } from '../../components/deals/SlotPicker';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 import { isDealValidNow } from '../../lib/utils';
+import { BOOKING_FEE_GBP } from '../../lib/theme';
 import * as Haptics from 'expo-haptics';
 import type { DealWithRestaurant, DealSlot } from '../../types';
 
@@ -229,6 +230,14 @@ export default function DealDetailScreen() {
             {deal.min_spend ? <Text style={styles.dealPerk}>💳 Min spend £{deal.min_spend}</Text> : null}
           </View>
 
+          {/* Transparent fee */}
+          <View style={styles.feeRow}>
+            <Text style={styles.feeText}>
+              £{BOOKING_FEE_GBP.toFixed(2)} booking fee — shown upfront, charged only when you book.
+            </Text>
+            <Text style={styles.feeSub}>No percentage fees. What you see is what you pay.</Text>
+          </View>
+
           {/* About */}
           {r.description && (
             <View style={styles.descCard}>
@@ -302,6 +311,9 @@ const styles = StyleSheet.create({
   redeemBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   dealDesc: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
   dealPerk: { fontSize: 13, color: '#374151' },
+  feeRow: { marginTop: 12, paddingHorizontal: 4 },
+  feeText: { fontSize: 13, fontWeight: '600', color: '#1a1a2e' },
+  feeSub: { fontSize: 12, color: '#6b7280', marginTop: 2 },
   descCard: {
     backgroundColor: '#fff', borderRadius: 16, padding: 16,
     marginTop: 12, borderWidth: 1, borderColor: '#f3f4f6', gap: 8,
