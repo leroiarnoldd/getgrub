@@ -34,6 +34,14 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        <View style={styles.creditCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.creditLabel}>Grub credit</Text>
+            <Text style={styles.creditSub}>Earn 10% back every time you dine</Text>
+          </View>
+          <Text style={styles.creditValue}>£{(profile?.credit_balance ?? 0).toFixed(2)}</Text>
+        </View>
+
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>£{(profile?.total_saved ?? 0).toFixed(0)}</Text>
@@ -117,6 +125,13 @@ const styles = StyleSheet.create({
   userInfo: { flex: 1 },
   displayName: { fontWeight: '800', fontSize: 18, color: '#1a1a2e' },
   email: { color: '#6b7280', fontSize: 13, marginTop: 2 },
+  creditCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#1A1A2E', borderRadius: 16, padding: 18, marginBottom: 12,
+  },
+  creditLabel: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  creditSub: { color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 2 },
+  creditValue: { color: '#F5B301', fontWeight: '900', fontSize: 26 },
   statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   statCard: { flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 16, alignItems: 'center' },
   statValue: { fontSize: 22, fontWeight: '900', color: '#1A1A2E' },

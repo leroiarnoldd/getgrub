@@ -82,6 +82,7 @@ export default function SearchScreen() {
           budget_max_per_head: 50,
           total_saved: 0,
           total_redemptions: 0,
+          credit_balance: 0,
           expo_push_token: null,
           push_enabled: true,
           created_at: '',

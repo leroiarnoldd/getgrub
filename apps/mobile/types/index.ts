@@ -86,6 +86,7 @@ export interface UserProfile {
   budget_max_per_head: number;
   total_saved: number;
   total_redemptions: number;
+  credit_balance: number;
   expo_push_token: string | null;
   push_enabled: boolean;
   created_at: string;

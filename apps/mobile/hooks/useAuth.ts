@@ -2,16 +2,28 @@ import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
+import type { UserProfile } from '../types';
 
 export function useAuth() {
   const { user, session, isLoading, setSession, setLoading, signOut: clearAuth } = useAuthStore();
   const setProfile = useUserStore(s => s.setProfile);
 
   useEffect(() => {
+    const loadProfile = async (userId: string | undefined) => {
+      if (!userId) { setProfile(null); return; }
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      if (data) setProfile(data as UserProfile);
+    };
+
     supabase.auth
       .getSession()
-      .then(({ data: { session } }) => {
+      .then(async ({ data: { session } }) => {
         setSession(session);
+        await loadProfile(session?.user?.id);
       })
       .catch((e) => {
         console.warn('getSession failed:', e);
@@ -22,6 +34,7 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      loadProfile(session?.user?.id);
       setLoading(false);
     });
 
