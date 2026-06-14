@@ -22,7 +22,7 @@ export function RestaurantMap({ lat, lng, name }: Props) {
         scrollEnabled={false}
         zoomEnabled={false}
       >
-        <Marker coordinate={{ latitude: lat, longitude: lng }} title={name} pinColor="#e8593c" />
+        <Marker coordinate={{ latitude: lat, longitude: lng }} title={name} pinColor="#1A1A2E" />
       </MapView>
     </View>
   );

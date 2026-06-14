@@ -184,13 +184,13 @@ function ListDealCard({ deal, onPress }: { deal: DealWithRestaurant; onPress: ()
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
   listContent: { paddingBottom: 100 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8,
   },
-  logo: { fontSize: 22, fontWeight: '900', color: '#FF0000', letterSpacing: 1 },
+  logo: { fontSize: 22, fontWeight: '900', color: '#1A1A2E', letterSpacing: 1 },
   profileBtn: {
     width: 38, height: 38, borderRadius: 19,
     backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center',
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   featuredImage: { width: 240, height: 280 },
   featuredBadge: {
-    position: 'absolute', top: 12, left: 12, backgroundColor: '#FF0000',
+    position: 'absolute', top: 12, left: 12, backgroundColor: '#1A1A2E',
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
   },
   featuredBadgeText: { color: '#fff', fontWeight: '800', fontSize: 14 },
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   listImageWrap: { position: 'relative' },
   listImage: { width: '100%', height: 200 },
   listBadge: {
-    position: 'absolute', top: 12, left: 12, backgroundColor: '#FF0000',
+    position: 'absolute', top: 12, left: 12, backgroundColor: '#1A1A2E',
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
   },
   listBadgeText: { color: '#fff', fontWeight: '800', fontSize: 13 },

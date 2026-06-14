@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   placeholderEmoji: { fontSize: 48 },
   discountBadge: {
     position: 'absolute', top: 12, right: 12,
-    backgroundColor: '#FF0000', borderRadius: 10,
+    backgroundColor: '#1A1A2E', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 5,
   },
   discountText: { color: '#fff', fontWeight: '800', fontSize: 13, letterSpacing: 0.3 },

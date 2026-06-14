@@ -18,7 +18,7 @@ function StarRating({ value, onChange, label, emoji }: { value: number; onChange
       <View style={styles.starRow}>
         {[1, 2, 3, 4, 5].map(star => (
           <TouchableOpacity key={star} onPress={() => onChange(star)}>
-            <Text style={[styles.star, { color: star <= value ? '#FF0000' : '#e5e7eb' }]}>★</Text>
+            <Text style={[styles.star, { color: star <= value ? '#1A1A2E' : '#e5e7eb' }]}>★</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -135,7 +135,7 @@ export default function FeedbackScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
   scroll: { padding: 20, paddingBottom: 48 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#1a1a2e' },
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   optional: { fontWeight: '400', color: '#9ca3af' },
   textInput: { color: '#1a1a2e', fontSize: 14, minHeight: 90, textAlignVertical: 'top', lineHeight: 20 },
   submitBtn: { borderRadius: 16, paddingVertical: 18, alignItems: 'center' },
-  submitBtnActive: { backgroundColor: '#FF0000' },
+  submitBtnActive: { backgroundColor: '#1A1A2E' },
   submitBtnDisabled: { backgroundColor: '#e5e7eb' },
   submitBtnText: { color: '#fff', fontWeight: '800', fontSize: 17 },
 });

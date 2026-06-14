@@ -86,11 +86,11 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   highlight: {
-    color: '#e8593c',
+    color: '#1A1A2E',
     fontWeight: '600',
   },
   claimButton: {
-    backgroundColor: '#e8593c',
+    backgroundColor: '#1A1A2E',
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',

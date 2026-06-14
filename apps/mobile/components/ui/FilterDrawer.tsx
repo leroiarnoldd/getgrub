@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
   },
   chipActive: {
-    backgroundColor: '#FF0000',
+    backgroundColor: '#1A1A2E',
   },
   chipText: {
     fontSize: 14,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     flex: 2,
     paddingVertical: 14,
     borderRadius: 14,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#1A1A2E',
     alignItems: 'center',
   },
   applyText: {

@@ -69,7 +69,7 @@ export default function DealDetailScreen() {
   if (isLoading || !deal) {
     return (
       <SafeAreaView style={styles.loading}>
-        <ActivityIndicator size="large" color="#FF0000" />
+        <ActivityIndicator size="large" color="#1A1A2E" />
       </SafeAreaView>
     );
   }
@@ -103,7 +103,7 @@ export default function DealDetailScreen() {
           <View style={styles.nameRow}>
             <Text style={styles.restaurantName}>{r.name}</Text>
             <TouchableOpacity onPress={handleToggleSave} style={styles.heartBtn}>
-              <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={24} color={isSaved ? '#FF0000' : '#1a1a2e'} />
+              <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={24} color={isSaved ? '#1A1A2E' : '#1a1a2e'} />
             </TouchableOpacity>
           </View>
 
@@ -243,8 +243,8 @@ export default function DealDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF7F2' },
   heroWrap: { position: 'relative' },
   heroImage: { width: '100%', height: 280 },
   heroPlaceholder: { backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },

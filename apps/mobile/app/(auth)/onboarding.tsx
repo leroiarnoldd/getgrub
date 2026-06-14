@@ -225,7 +225,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
   },
   progressRow: {
     flexDirection: 'row',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   progressDotActive: {
     width: 32,
-    backgroundColor: '#e8593c',
+    backgroundColor: '#1A1A2E',
   },
   progressDotInactive: {
     width: 8,
@@ -264,8 +264,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   cityOptionSelected: {
-    backgroundColor: '#e8593c',
-    borderColor: '#e8593c',
+    backgroundColor: '#1A1A2E',
+    borderColor: '#1A1A2E',
   },
   cityOptionDefault: {
     backgroundColor: '#ffffff',
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   continueButton: {
-    backgroundColor: '#e8593c',
+    backgroundColor: '#1A1A2E',
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',

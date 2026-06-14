@@ -24,7 +24,7 @@ export function ConciergeInput({ value, onChangeText, onSubmit, isLoading }: Pro
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={onSubmit} disabled={isLoading}>
-          <Ionicons name={isLoading ? 'hourglass' : 'arrow-forward-circle'} size={24} color="#e8593c" />
+          <Ionicons name={isLoading ? 'hourglass' : 'arrow-forward-circle'} size={24} color="#1A1A2E" />
         </TouchableOpacity>
       )}
     </View>

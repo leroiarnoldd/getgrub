@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     borderWidth: 2,
-    borderColor: 'rgba(232, 89, 60, 0.2)',
+    borderColor: 'rgba(26, 26, 46, 0.15)',
   },
   restaurantName: {
     color: '#1a1a2e',
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   codeBox: {
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
     borderRadius: 16,
     paddingHorizontal: 32,
     paddingVertical: 24,
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   dealTitle: {
-    color: '#e8593c',
+    color: '#1A1A2E',
     fontWeight: '700',
     fontSize: 18,
     textAlign: 'center',
