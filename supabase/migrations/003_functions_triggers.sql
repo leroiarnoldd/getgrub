@@ -1,12 +1,20 @@
 -- Auto-create profile on signup
 create or replace function handle_new_user()
-returns trigger as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
-  insert into user_profiles (id, display_name)
-  values (new.id, split_part(new.email, '@', 1));
+  insert into public.user_profiles (id, display_name)
+  values (new.id, split_part(new.email, '@', 1))
+  on conflict (id) do nothing;
   return new;
+exception
+  when others then
+    return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create trigger on_auth_user_created
   after insert on auth.users
