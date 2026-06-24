@@ -1,72 +1,35 @@
-import { Tabs, Redirect } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../stores/authStore';
-import { View, ActivityIndicator } from 'react-native';
+import { Stack } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useAuth } from '../hooks/useAuth';
 
-export default function TabsLayout() {
-  const { user, isLoading } = useAuthStore();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 15_000 },
+  },
+});
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAFAF5' }}>
-        <ActivityIndicator color="#FF0000" size="large" />
-      </View>
-    );
-  }
+function AuthBootstrap({ children }: { children: React.ReactNode }) {
+  useAuth();
+  return <>{children}</>;
+}
 
-  if (!user) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
+export default function RootLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#1a1a2e',
-        tabBarInactiveTintColor: '#9ca3af',
-        tabBarStyle: {
-          backgroundColor: '#FAFAF5',
-          borderTopColor: '#e5e7eb',
-          borderTopWidth: 1,
-          height: 68,
-          paddingBottom: 12,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          tabBarLabel: 'Explore',
-          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="saved"
-        options={{
-          tabBarLabel: 'Saved',
-          tabBarIcon: ({ color, size }) => <Ionicons name="heart-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          tabBarLabel: 'My Offers',
-          tabBarIcon: ({ color, size }) => <Ionicons name="ticket-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen name="search" options={{ href: null }} />
-    </Tabs>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthBootstrap>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="deal/[id]" />
+            <Stack.Screen name="claim/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="feedback/[claimId]" options={{ presentation: 'modal' }} />
+          </Stack>
+          <StatusBar style="dark" />
+        </AuthBootstrap>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

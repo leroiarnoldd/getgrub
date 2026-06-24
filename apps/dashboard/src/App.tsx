@@ -4,22 +4,34 @@ import { supabase } from './lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { Overview } from './pages/Overview';
 import { Deals } from './pages/Deals';
+import { Slots } from './pages/Slots';
+import { Bookings } from './pages/Bookings';
 import { Feedback } from './pages/Feedback';
 import { Billing } from './pages/Billing';
 import { Settings } from './pages/Settings';
+import { RestaurantSetup } from './pages/RestaurantSetup';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(error.message);
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setError(error.message);
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) setError(error.message);
+      else if (!data.session) setNotice('Account created. Check your email to confirm, then sign in.');
+    }
     setIsLoading(false);
   };
 
@@ -29,9 +41,12 @@ function Login() {
         <h1 className="text-3xl font-black text-getgrub-navy mb-2">Get Grub</h1>
         <p className="text-gray-500 mb-8">Restaurant partner dashboard</p>
 
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 text-red-600 rounded-xl px-4 py-3 text-sm">{error}</div>
+          )}
+          {notice && (
+            <div className="bg-green-50 text-green-700 rounded-xl px-4 py-3 text-sm">{notice}</div>
           )}
           <div>
             <label className="block text-sm font-medium text-getgrub-navy mb-1">Email</label>
@@ -39,7 +54,7 @@ function Login() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-getgrub-navy focus:outline-none focus:ring-2 focus:ring-getgrub-coral"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-getgrub-navy focus:outline-none focus:ring-2 focus:ring-getgrub-navy"
               required
             />
           </div>
@@ -49,18 +64,25 @@ function Login() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-getgrub-navy focus:outline-none focus:ring-2 focus:ring-getgrub-coral"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-getgrub-navy focus:outline-none focus:ring-2 focus:ring-getgrub-navy"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-getgrub-coral text-white font-bold py-3 rounded-xl disabled:opacity-50 hover:bg-opacity-90 transition"
+            className="w-full bg-getgrub-navy text-white font-bold py-3 rounded-xl disabled:opacity-50 hover:bg-opacity-90 transition"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
+
+        <button
+          onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}
+          className="w-full text-center text-sm text-gray-500 mt-4 hover:text-getgrub-navy transition"
+        >
+          {mode === 'signin' ? "New restaurant? Create an account" : 'Already have an account? Sign in'}
+        </button>
       </div>
     </div>
   );
@@ -72,6 +94,8 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { to: '/overview', label: 'Overview' },
     { to: '/deals', label: 'Deals' },
+    { to: '/slots', label: 'Slots' },
+    { to: '/bookings', label: 'Bookings' },
     { to: '/feedback', label: 'Feedback' },
     { to: '/billing', label: 'Billing' },
     { to: '/settings', label: 'Settings' },
@@ -121,15 +145,25 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasRestaurant, setHasRestaurant] = useState<boolean | null>(null);
+
+  const checkRestaurant = async (uid: string) => {
+    const { data } = await supabase
+      .from('restaurants').select('id').eq('owner_id', uid).limit(1);
+    setHasRestaurant((data?.length ?? 0) > 0);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) checkRestaurant(session.user.id);
       setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) checkRestaurant(session.user.id);
+      else setHasRestaurant(null);
     });
 
     return () => subscription.unsubscribe();
@@ -138,13 +172,25 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-getgrub-cream flex items-center justify-center">
-        <div className="text-getgrub-coral text-lg font-semibold">Loading...</div>
+        <div className="text-getgrub-navy text-lg font-semibold">Loading...</div>
       </div>
     );
   }
 
   if (!user) {
     return <Login />;
+  }
+
+  if (hasRestaurant === null) {
+    return (
+      <div className="min-h-screen bg-getgrub-cream flex items-center justify-center">
+        <div className="text-getgrub-navy text-lg font-semibold">Loading...</div>
+      </div>
+    );
+  }
+
+  if (hasRestaurant === false) {
+    return <RestaurantSetup onCreated={() => user && checkRestaurant(user.id)} />;
   }
 
   return (
@@ -154,6 +200,8 @@ export default function App() {
           <Route path="/" element={<Navigate to="/overview" replace />} />
           <Route path="/overview" element={<Overview />} />
           <Route path="/deals" element={<Deals />} />
+          <Route path="/slots" element={<Slots />} />
+          <Route path="/bookings" element={<Bookings />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/settings" element={<Settings />} />

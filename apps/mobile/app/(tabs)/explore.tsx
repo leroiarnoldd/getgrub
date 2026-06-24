@@ -107,7 +107,7 @@ function GridCard({ deal, onPress }: { deal: DealWithRestaurant; onPress: () => 
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
   header: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 },
   title: { fontSize: 26, fontWeight: '900', color: '#1a1a2e' },
   sub: { fontSize: 13, color: '#6b7280', marginTop: 2 },
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8,
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
   },
-  chipActive: { backgroundColor: '#FF0000', borderColor: '#FF0000' },
+  chipActive: { backgroundColor: '#1A1A2E', borderColor: '#1A1A2E' },
   chipText: { fontWeight: '500', fontSize: 13, color: '#1a1a2e' },
   chipTextActive: { color: '#fff' },
   grid: { paddingHorizontal: 12, paddingBottom: 100 },
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#1A1A2E',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,

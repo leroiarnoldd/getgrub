@@ -8,7 +8,7 @@ export default function AuthLayout() {
   if (isLoading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color="#e8593c" size="large" />
+        <ActivityIndicator color="#1A1A2E" size="large" />
       </View>
     );
   }
@@ -27,6 +27,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
   },
 });

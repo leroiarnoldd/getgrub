@@ -30,7 +30,7 @@ export function DealList({ deals, isLoading, isRefreshing, onRefresh, userDietar
       )}
       contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 100 }}
       refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#e8593c" />
+        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#1A1A2E" />
       }
       ListEmptyComponent={
         <View style={styles.emptyContainer}>

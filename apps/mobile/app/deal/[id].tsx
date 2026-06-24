@@ -6,11 +6,14 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useDeal } from '../../hooks/useDeals';
 import { useClaimDeal } from '../../hooks/useClaim';
+import { useDealSlots, useBookSlot } from '../../hooks/useSlots';
+import { SlotPicker } from '../../components/deals/SlotPicker';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/authStore';
 import { isDealValidNow } from '../../lib/utils';
+import { BOOKING_FEE_GBP } from '../../lib/theme';
 import * as Haptics from 'expo-haptics';
-import type { DealWithRestaurant } from '../../types';
+import type { DealWithRestaurant, DealSlot } from '../../types';
 
 function spotsLeft(deal: DealWithRestaurant) {
   if (!deal.max_daily_claims) return null;
@@ -22,18 +25,29 @@ export default function DealDetailScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { data: deal, isLoading } = useDeal(id);
+  const { data: slots = [] } = useDealSlots(id);
   const { mutateAsync: claimDeal, isPending: isClaiming } = useClaimDeal();
+  const { mutateAsync: bookSlot, isPending: isBooking } = useBookSlot();
   const [partySize, setPartySize] = useState(2);
   const [isSaved, setIsSaved] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<DealSlot | null>(null);
+
+  const hasSlots = slots.length > 0;
 
   const handleClaim = async () => {
     if (!deal || !user) return;
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const claim = await claimDeal({ dealId: deal.id, restaurantId: deal.restaurant_id, partySize });
+      const claim = hasSlots
+        ? await bookSlot({ slotId: selectedSlot!.id, partySize })
+        : await claimDeal({ dealId: deal.id, restaurantId: deal.restaurant_id, partySize });
       router.push(`/claim/${claim.id}`);
     } catch (e: unknown) {
-      Alert.alert('Could not claim deal', e instanceof Error ? e.message : 'Please try again');
+      setSelectedSlot(null);
+      Alert.alert(
+        hasSlots ? 'Could not book table' : 'Could not claim deal',
+        e instanceof Error ? e.message : 'Please try again'
+      );
     }
   };
 
@@ -56,7 +70,7 @@ export default function DealDetailScreen() {
   if (isLoading || !deal) {
     return (
       <SafeAreaView style={styles.loading}>
-        <ActivityIndicator size="large" color="#FF0000" />
+        <ActivityIndicator size="large" color="#1A1A2E" />
       </SafeAreaView>
     );
   }
@@ -64,6 +78,8 @@ export default function DealDetailScreen() {
   const r = deal.restaurant;
   const isValidNow = isDealValidNow(deal);
   const spots = spotsLeft(deal);
+  const isBusy = isClaiming || isBooking;
+  const canRedeem = hasSlots ? !!selectedSlot : isValidNow;
   const cuisineLabel = r.cuisine_tags.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(', ');
 
   return (
@@ -88,7 +104,7 @@ export default function DealDetailScreen() {
           <View style={styles.nameRow}>
             <Text style={styles.restaurantName}>{r.name}</Text>
             <TouchableOpacity onPress={handleToggleSave} style={styles.heartBtn}>
-              <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={24} color={isSaved ? '#FF0000' : '#1a1a2e'} />
+              <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={24} color={isSaved ? '#1A1A2E' : '#1a1a2e'} />
             </TouchableOpacity>
           </View>
 
@@ -158,38 +174,68 @@ export default function DealDetailScreen() {
 
           <View style={styles.divider} />
 
+          {/* Bookable slots */}
+          {hasSlots && (
+            <>
+              <Text style={styles.sectionTitle}>Pick a time</Text>
+              <SlotPicker
+                slots={slots}
+                selectedSlotId={selectedSlot?.id ?? null}
+                onSelect={setSelectedSlot}
+                baseDiscount={deal.discount_percent}
+              />
+              <View style={styles.divider} />
+            </>
+          )}
+
           {/* Deal card */}
           <View style={styles.dealCard}>
             <View style={styles.dealCardTop}>
               <View style={styles.dealCardLeft}>
                 <View style={styles.dealTitleRow}>
                   <Text style={styles.lightning}>⚡</Text>
-                  <Text style={styles.dealTitle}>{deal.discount_percent}% Off – Dine In</Text>
+                  <Text style={styles.dealTitle}>
+                    {(selectedSlot?.discount_percent ?? deal.discount_percent)}% Off – Dine In
+                  </Text>
                 </View>
-                {deal.valid_from && deal.valid_until && (
-                  <Text style={styles.dealSub}>Arrive before {deal.valid_until}</Text>
+                {hasSlots ? (
+                  <Text style={styles.dealSub}>
+                    {selectedSlot ? 'Table held for 15 min after start time' : 'Pick a time above to book'}
+                  </Text>
+                ) : (
+                  deal.valid_from && deal.valid_until && (
+                    <Text style={styles.dealSub}>Arrive before {deal.valid_until}</Text>
+                  )
                 )}
-                {spots !== null && spots <= 5 && (
+                {!hasSlots && spots !== null && spots <= 5 && (
                   <View style={styles.spotsBadge}>
                     <Text style={styles.spotsText}>{spots} Left</Text>
                   </View>
                 )}
               </View>
               <TouchableOpacity
-                style={[styles.redeemBtn, (!isValidNow || isClaiming) && styles.redeemBtnDisabled]}
+                style={[styles.redeemBtn, (!canRedeem || isBusy) && styles.redeemBtnDisabled]}
                 onPress={handleClaim}
-                disabled={!isValidNow || isClaiming}
+                disabled={!canRedeem || isBusy}
               >
-                {isClaiming ? (
+                {isBusy ? (
                   <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Text style={styles.redeemBtnText}>Redeem</Text>
+                  <Text style={styles.redeemBtnText}>{hasSlots ? 'Book' : 'Redeem'}</Text>
                 )}
               </TouchableOpacity>
             </View>
             {deal.description ? <Text style={styles.dealDesc}>{deal.description}</Text> : null}
             {deal.includes_drinks && <Text style={styles.dealPerk}>🍷 Drinks included</Text>}
             {deal.min_spend ? <Text style={styles.dealPerk}>💳 Min spend £{deal.min_spend}</Text> : null}
+          </View>
+
+          {/* Transparent fee */}
+          <View style={styles.feeRow}>
+            <Text style={styles.feeText}>
+              £{BOOKING_FEE_GBP.toFixed(2)} booking fee — shown upfront, charged only when you book.
+            </Text>
+            <Text style={styles.feeSub}>No percentage fees. What you see is what you pay.</Text>
           </View>
 
           {/* About */}
@@ -206,8 +252,8 @@ export default function DealDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAF7F2' },
   heroWrap: { position: 'relative' },
   heroImage: { width: '100%', height: 280 },
   heroPlaceholder: { backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center' },
@@ -233,6 +279,7 @@ const styles = StyleSheet.create({
   openText: { fontSize: 14, fontWeight: '700', color: '#16a34a' },
   closedText: { fontSize: 14, fontWeight: '700', color: '#dc2626' },
   infoSub: { fontSize: 12, color: '#6b7280', lineHeight: 18 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#1a1a2e', marginBottom: 4 },
   partySizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   partySizeLabel: { fontSize: 15, fontWeight: '600', color: '#1a1a2e' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },
@@ -264,6 +311,9 @@ const styles = StyleSheet.create({
   redeemBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   dealDesc: { fontSize: 13, color: '#6b7280', lineHeight: 18 },
   dealPerk: { fontSize: 13, color: '#374151' },
+  feeRow: { marginTop: 12, paddingHorizontal: 4 },
+  feeText: { fontSize: 13, fontWeight: '600', color: '#1a1a2e' },
+  feeSub: { fontSize: 12, color: '#6b7280', marginTop: 2 },
   descCard: {
     backgroundColor: '#fff', borderRadius: 16, padding: 16,
     marginTop: 12, borderWidth: 1, borderColor: '#f3f4f6', gap: 8,

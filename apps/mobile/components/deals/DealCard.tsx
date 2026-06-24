@@ -3,14 +3,27 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { DietaryTags } from '../ui/DietaryTags';
 import type { DealWithRestaurant } from '../../types';
+import type { NextSlot } from '../../hooks/useSlots';
 import { formatDaysRange } from '../../lib/utils';
 
 interface Props {
   deal: DealWithRestaurant;
   userDietaryTags?: string[];
+  nextSlot?: NextSlot;
 }
 
-export function DealCard({ deal, userDietaryTags }: Props) {
+function slotLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return `Tonight ${time}`;
+  if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow ${time}`;
+  return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${time}`;
+}
+
+export function DealCard({ deal, userDietaryTags, nextSlot }: Props) {
   const router = useRouter();
   const r = deal.restaurant;
 
@@ -36,8 +49,16 @@ export function DealCard({ deal, userDietaryTags }: Props) {
             </View>
           )}
           <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>{deal.discount_percent}% OFF</Text>
+            <Text style={styles.discountText}>{(nextSlot?.discount ?? deal.discount_percent)}% OFF</Text>
           </View>
+          {nextSlot && (
+            <View style={styles.slotBadge}>
+              <Text style={styles.slotBadgeText}>⚡ {slotLabel(nextSlot.starts_at)}</Text>
+              {nextSlot.seatsLeft <= 6 && (
+                <Text style={styles.slotBadgeSub}>{nextSlot.seatsLeft} seats left</Text>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={styles.body}>
@@ -94,10 +115,17 @@ const styles = StyleSheet.create({
   placeholderEmoji: { fontSize: 48 },
   discountBadge: {
     position: 'absolute', top: 12, right: 12,
-    backgroundColor: '#FF0000', borderRadius: 10,
+    backgroundColor: '#1A1A2E', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 5,
   },
   discountText: { color: '#fff', fontWeight: '800', fontSize: 13, letterSpacing: 0.3 },
+  slotBadge: {
+    position: 'absolute', top: 12, left: 12,
+    backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5,
+  },
+  slotBadgeText: { color: '#1a1a2e', fontWeight: '700', fontSize: 12 },
+  slotBadgeSub: { color: '#b45309', fontWeight: '600', fontSize: 11, marginTop: 1 },
   body: { padding: 16, gap: 8 },
   topRow: {
     flexDirection: 'row', alignItems: 'flex-start',

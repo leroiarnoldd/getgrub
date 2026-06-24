@@ -38,7 +38,7 @@ export function RestaurantHero({ restaurant, isSaved, onToggleSave }: Props) {
             onPress={onToggleSave}
             style={{ position: 'absolute', top: 48, right: 16, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 20, padding: 8 }}
           >
-            <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={20} color="#e8593c" />
+            <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={20} color="#1A1A2E" />
           </TouchableOpacity>
         )}
       </View>

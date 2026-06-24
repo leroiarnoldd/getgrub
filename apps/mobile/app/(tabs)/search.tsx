@@ -82,6 +82,7 @@ export default function SearchScreen() {
           budget_max_per_head: 50,
           total_saved: 0,
           total_redemptions: 0,
+          credit_balance: 0,
           expo_push_token: null,
           push_enabled: true,
           created_at: '',
@@ -135,7 +136,7 @@ export default function SearchScreen() {
 
         {isLoading && (
           <View style={styles.loadingBlock}>
-            <ActivityIndicator size="large" color="#e8593c" />
+            <ActivityIndicator size="large" color="#1A1A2E" />
             <Text style={styles.loadingText}>Finding your perfect match...</Text>
           </View>
         )}
@@ -182,7 +183,7 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
   },
   scrollContent: {
     padding: 16,

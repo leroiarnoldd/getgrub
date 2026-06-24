@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useClaim } from '../../hooks/useClaim';
 import { useDeal } from '../../hooks/useDeals';
+import { useSlot } from '../../hooks/useSlots';
 import { VoucherDisplay } from '../../components/deals/VoucherDisplay';
 
 export default function ClaimScreen() {
@@ -10,11 +11,12 @@ export default function ClaimScreen() {
   const router = useRouter();
   const { data: claim, isLoading: claimLoading } = useClaim(id);
   const { data: deal, isLoading: dealLoading } = useDeal(claim?.deal_id ?? '');
+  const { data: slot } = useSlot(claim?.slot_id);
 
   if (claimLoading || dealLoading || !claim || !deal) {
     return (
       <SafeAreaView style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color="#e8593c" />
+        <ActivityIndicator size="large" color="#1A1A2E" />
       </SafeAreaView>
     );
   }
@@ -53,7 +55,9 @@ export default function ClaimScreen() {
             claim={claim}
             restaurantName={deal.restaurant.name}
             dealTitle={deal.title}
+            slot={slot}
           />
+
         )}
 
         {/* Instructions */}
@@ -95,13 +99,13 @@ export default function ClaimScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
   },
   loadingScreen: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
   },
   scrollContent: {
     padding: 16,
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
   stepBadge: {
     width: 24,
     height: 24,
-    backgroundColor: '#e8593c',
+    backgroundColor: '#1A1A2E',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',

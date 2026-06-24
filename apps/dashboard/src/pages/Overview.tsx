@@ -5,6 +5,9 @@ import type { Restaurant, Claim } from '../types';
 interface Stats {
   totalClaims: number;
   redeemedClaims: number;
+  coversBooked: number;
+  coversSeated: number;
+  revenueDelivered: number;
   totalSavedByUsers: number;
   reliabilityScore: number;
   claimsToday: number;
@@ -46,10 +49,16 @@ export function Overview() {
 
       const claimList = (claims ?? []) as Claim[];
       const today = new Date().toISOString().split('T')[0];
+      const redeemed = claimList.filter(c => c.status === 'redeemed');
 
       setStats({
         totalClaims: claimList.length,
-        redeemedClaims: claimList.filter(c => c.status === 'redeemed').length,
+        redeemedClaims: redeemed.length,
+        coversBooked: claimList
+          .filter(c => c.status === 'claimed' || c.status === 'redeemed')
+          .reduce((acc, c) => acc + (c.party_size ?? 0), 0),
+        coversSeated: redeemed.reduce((acc, c) => acc + (c.party_size ?? 0), 0),
+        revenueDelivered: redeemed.reduce((acc, c) => acc + (c.actual_bill ?? 0), 0),
         totalSavedByUsers: claimList.reduce((acc, c) => acc + (c.amount_saved ?? 0), 0),
         reliabilityScore: rest.reliability_score,
         claimsToday: claimList.filter(c => c.claimed_at.startsWith(today)).length,
@@ -88,27 +97,35 @@ export function Overview() {
         <p className="text-gray-500">{restaurant.address}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <StatCard
-          label="Total claims"
-          value={stats?.totalClaims.toString() ?? '0'}
-          sub="All time"
+          label="Revenue delivered"
+          value={`£${Math.round(stats?.revenueDelivered ?? 0).toLocaleString()}`}
+          sub={`from ${stats?.coversSeated ?? 0} seated covers`}
         />
         <StatCard
-          label="Redeemed"
-          value={stats?.redeemedClaims.toString() ?? '0'}
-          sub={`${stats ? Math.round((stats.redeemedClaims / Math.max(1, stats.totalClaims)) * 100) : 0}% redemption rate`}
+          label="Covers booked"
+          value={stats?.coversBooked.toString() ?? '0'}
+          sub={`${stats?.claimsToday ?? 0} new today`}
         />
         <StatCard
-          label="Today's claims"
-          value={stats?.claimsToday.toString() ?? '0'}
-          sub="Live today"
+          label="Redemption rate"
+          value={`${stats ? Math.round((stats.redeemedClaims / Math.max(1, stats.totalClaims)) * 100) : 0}%`}
+          sub={`${stats?.redeemedClaims ?? 0} of ${stats?.totalClaims ?? 0} bookings`}
         />
         <StatCard
           label="Reliability score"
           value={`${stats?.reliabilityScore ?? 100}%`}
           sub={stats && stats.reliabilityScore >= 90 ? 'Excellent' : stats && stats.reliabilityScore >= 75 ? 'Good' : 'Needs attention'}
         />
+      </div>
+
+      <div className="bg-getgrub-navy rounded-2xl p-6 mb-8 text-white">
+        <p className="text-white/70 text-sm">Savings passed to your diners</p>
+        <p className="text-3xl font-black mt-1">£{Math.round(stats?.totalSavedByUsers ?? 0).toLocaleString()}</p>
+        <p className="text-white/60 text-xs mt-1">
+          Off-peak demand you filled — covers that would otherwise have sat empty.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

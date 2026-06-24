@@ -34,6 +34,14 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        <View style={styles.creditCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.creditLabel}>Grub credit</Text>
+            <Text style={styles.creditSub}>Earn 10% back every time you dine</Text>
+          </View>
+          <Text style={styles.creditValue}>£{(profile?.credit_balance ?? 0).toFixed(2)}</Text>
+        </View>
+
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>£{(profile?.total_saved ?? 0).toFixed(0)}</Text>
@@ -92,7 +100,7 @@ export default function ProfileScreen() {
             <Switch
               value={profile?.push_enabled ?? true}
               onValueChange={handleTogglePush}
-              trackColor={{ false: '#e5e7eb', true: '#FF0000' }}
+              trackColor={{ false: '#e5e7eb', true: '#1A1A2E' }}
               thumbColor="#fff"
             />
           </View>
@@ -108,18 +116,25 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
   scroll: { padding: 20, paddingBottom: 100 },
   pageTitle: { fontSize: 26, fontWeight: '900', color: '#1a1a2e', marginBottom: 20 },
   avatarCard: { flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: '#fff', borderRadius: 20, padding: 20, marginBottom: 16 },
-  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#FF0000', alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#1A1A2E', alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontWeight: '900', fontSize: 22 },
   userInfo: { flex: 1 },
   displayName: { fontWeight: '800', fontSize: 18, color: '#1a1a2e' },
   email: { color: '#6b7280', fontSize: 13, marginTop: 2 },
+  creditCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#1A1A2E', borderRadius: 16, padding: 18, marginBottom: 12,
+  },
+  creditLabel: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  creditSub: { color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 2 },
+  creditValue: { color: '#F5B301', fontWeight: '900', fontSize: 26 },
   statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   statCard: { flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 16, alignItems: 'center' },
-  statValue: { fontSize: 22, fontWeight: '900', color: '#FF0000' },
+  statValue: { fontSize: 22, fontWeight: '900', color: '#1A1A2E' },
   statLabel: { fontSize: 11, color: '#6b7280', marginTop: 4, textAlign: 'center' },
   card: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginBottom: 16, gap: 12 },
   cardTitle: { fontWeight: '800', fontSize: 15, color: '#1a1a2e' },

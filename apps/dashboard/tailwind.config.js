@@ -5,10 +5,11 @@ export default {
     extend: {
       colors: {
         getgrub: {
-          navy: '#1a1a2e',
-          coral: '#e8593c',
-          cream: '#fafaf8',
+          navy: '#1A1A2E',
+          coral: '#1A1A2E',
+          cream: '#FAF7F2',
           teal: '#1d9e75',
+          gold: '#F5B301',
         },
       },
     },

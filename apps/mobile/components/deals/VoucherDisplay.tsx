@@ -1,14 +1,25 @@
 import { View, Text, StyleSheet } from 'react-native';
-import type { Claim } from '../../types';
+import type { Claim, DealSlot } from '../../types';
 import { formatUKTime } from '../../lib/utils';
 
 interface Props {
   claim: Claim;
   restaurantName: string;
   dealTitle: string;
+  slot?: DealSlot | null;
 }
 
-export function VoucherDisplay({ claim, restaurantName, dealTitle }: Props) {
+function slotDayLabel(iso: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  if (d.toDateString() === today.toDateString()) return 'today';
+  if (d.toDateString() === tomorrow.toDateString()) return 'tomorrow';
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+}
+
+export function VoucherDisplay({ claim, restaurantName, dealTitle, slot }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.restaurantName}>{restaurantName}</Text>
@@ -17,8 +28,19 @@ export function VoucherDisplay({ claim, restaurantName, dealTitle }: Props) {
         <Text style={styles.code}>{claim.voucher_code}</Text>
       </View>
       <Text style={styles.dealTitle}>{dealTitle}</Text>
+      {slot && (
+        <View style={styles.slotBox}>
+          <Text style={styles.slotText}>
+            Table for {claim.party_size} · {slotDayLabel(slot.starts_at)} {formatUKTime(slot.starts_at)}–{formatUKTime(slot.ends_at)}
+          </Text>
+        </View>
+      )}
       <Text style={styles.instruction}>Show this screen to your server when you arrive</Text>
-      <Text style={styles.expiry}>Valid until {formatUKTime(claim.expires_at)} today</Text>
+      <Text style={styles.expiry}>
+        {slot
+          ? `Valid until ${formatUKTime(slot.ends_at)} on the day of your booking`
+          : `Valid until ${formatUKTime(claim.expires_at)} today`}
+      </Text>
     </View>
   );
 }
@@ -31,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     borderWidth: 2,
-    borderColor: 'rgba(232, 89, 60, 0.2)',
+    borderColor: 'rgba(26, 26, 46, 0.15)',
   },
   restaurantName: {
     color: '#1a1a2e',
@@ -40,7 +62,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   codeBox: {
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
     borderRadius: 16,
     paddingHorizontal: 32,
     paddingVertical: 24,
@@ -62,9 +84,21 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   dealTitle: {
-    color: '#e8593c',
+    color: '#1A1A2E',
     fontWeight: '700',
     fontSize: 18,
+    textAlign: 'center',
+  },
+  slotBox: {
+    backgroundColor: '#fef3f1',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  slotText: {
+    color: '#1a1a2e',
+    fontWeight: '600',
+    fontSize: 14,
     textAlign: 'center',
   },
   instruction: {

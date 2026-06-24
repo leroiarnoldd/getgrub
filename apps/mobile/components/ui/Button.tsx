@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   variantPrimary: {
-    backgroundColor: '#e8593c',
+    backgroundColor: '#1A1A2E',
   },
   variantSecondary: {
     backgroundColor: '#1a1a2e',

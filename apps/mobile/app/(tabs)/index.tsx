@@ -5,10 +5,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { useDeals } from '../../hooks/useDeals';
+import { useUpcomingSlotsByDeal, type NextSlot } from '../../hooks/useSlots';
 import { useUserStore } from '../../stores/userStore';
 import { FilterDrawer } from '../../components/ui/FilterDrawer';
 import type { DealWithRestaurant } from '../../types';
 import { formatDaysRange } from '../../lib/utils';
+
+function slotLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return `Tonight ${time}`;
+  if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow ${time}`;
+  return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${time}`;
+}
 
 interface Filters {
   cuisine: string;
@@ -47,6 +59,8 @@ export default function HomeScreen() {
   const allDeals = sortBy === 'discount'
     ? [...filteredDeals].sort((a, b) => b.discount_percent - a.discount_percent)
     : filteredDeals;
+
+  const { data: nextSlots = {} } = useUpcomingSlotsByDeal(filteredDeals.map(d => d.id));
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -103,7 +117,7 @@ export default function HomeScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <ListDealCard deal={item} onPress={() => router.push(`/deal/${item.id}`)} />
+          <ListDealCard deal={item} nextSlot={nextSlots[item.id]} onPress={() => router.push(`/deal/${item.id}`)} />
         )}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
@@ -151,7 +165,7 @@ function FeaturedCard({ deal, onPress }: { deal: DealWithRestaurant; onPress: ()
   );
 }
 
-function ListDealCard({ deal, onPress }: { deal: DealWithRestaurant; onPress: () => void }) {
+function ListDealCard({ deal, nextSlot, onPress }: { deal: DealWithRestaurant; nextSlot?: NextSlot; onPress: () => void }) {
   const r = deal.restaurant;
   return (
     <TouchableOpacity style={styles.listCard} onPress={onPress} activeOpacity={0.9}>
@@ -164,8 +178,16 @@ function ListDealCard({ deal, onPress }: { deal: DealWithRestaurant; onPress: ()
           </View>
         )}
         <View style={styles.listBadge}>
-          <Text style={styles.listBadgeText}>⚡ {deal.discount_percent}% Off</Text>
+          <Text style={styles.listBadgeText}>⚡ {(nextSlot?.discount ?? deal.discount_percent)}% Off</Text>
         </View>
+        {nextSlot && (
+          <View style={styles.listSlotBadge}>
+            <Text style={styles.listSlotText}>{slotLabel(nextSlot.starts_at)}</Text>
+            {nextSlot.seatsLeft <= 6 && (
+              <Text style={styles.listSlotSub}>· {nextSlot.seatsLeft} left</Text>
+            )}
+          </View>
+        )}
       </View>
       <View style={styles.listBody}>
         <View style={styles.listTopRow}>
@@ -184,13 +206,13 @@ function ListDealCard({ deal, onPress }: { deal: DealWithRestaurant; onPress: ()
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAF5' },
+  safe: { flex: 1, backgroundColor: '#FAF7F2' },
   listContent: { paddingBottom: 100 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8,
   },
-  logo: { fontSize: 22, fontWeight: '900', color: '#FF0000', letterSpacing: 1 },
+  logo: { fontSize: 22, fontWeight: '900', color: '#1A1A2E', letterSpacing: 1 },
   profileBtn: {
     width: 38, height: 38, borderRadius: 19,
     backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center',
@@ -211,7 +233,7 @@ const styles = StyleSheet.create({
   },
   featuredImage: { width: 240, height: 280 },
   featuredBadge: {
-    position: 'absolute', top: 12, left: 12, backgroundColor: '#FF0000',
+    position: 'absolute', top: 12, left: 12, backgroundColor: '#1A1A2E',
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
   },
   featuredBadgeText: { color: '#fff', fontWeight: '800', fontSize: 14 },
@@ -240,10 +262,16 @@ const styles = StyleSheet.create({
   listImageWrap: { position: 'relative' },
   listImage: { width: '100%', height: 200 },
   listBadge: {
-    position: 'absolute', top: 12, left: 12, backgroundColor: '#FF0000',
+    position: 'absolute', top: 12, left: 12, backgroundColor: '#1A1A2E',
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
   },
   listBadgeText: { color: '#fff', fontWeight: '800', fontSize: 13 },
+  listSlotBadge: {
+    position: 'absolute', bottom: 12, left: 12, flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+  },
+  listSlotText: { color: '#1a1a2e', fontWeight: '700', fontSize: 12 },
+  listSlotSub: { color: '#b45309', fontWeight: '600', fontSize: 12 },
   listBody: { padding: 14, gap: 4 },
   listTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   listName: { fontWeight: '800', fontSize: 16, color: '#1a1a2e', flex: 1, marginRight: 8 },

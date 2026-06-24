@@ -29,8 +29,8 @@ export default function SavedScreen() {
       if (error) throw error;
 
       const savedDeals = (data ?? [])
-        .map((row: { deal_id: string; deal: DealWithRestaurant }) => row.deal)
-        .filter(Boolean) as DealWithRestaurant[];
+        .map((row) => row.deal as unknown as DealWithRestaurant)
+        .filter(Boolean);
 
       setDeals(savedDeals);
     } catch (e) {
@@ -70,7 +70,7 @@ export default function SavedScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fafaf8',
+    backgroundColor: '#FAF7F2',
   },
   header: {
     paddingHorizontal: 16,
