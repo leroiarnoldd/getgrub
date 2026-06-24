@@ -7,9 +7,45 @@ Two web apps to host:
 Both are static sites. The database (Supabase) is already live in the cloud, so
 once these are hosted, anyone can use Get Grub from a URL — no laptop running.
 
+You end up with **two URLs**: one for diners, one for restaurants (where venues
+sign up via the dashboard's "Create an account" → "Set up your restaurant").
+
 ---
 
-## Fastest way: Netlify drag-and-drop (≈5 minutes, no account wiring)
+## Cloudflare Pages (recommended — you already use Cloudflare)
+
+### Option A — Drag-and-drop (≈5 min)
+Build both apps locally (ensure `apps/mobile/.env` and `apps/dashboard/.env`
+have your Supabase keys first — the dashboard uses the `VITE_` prefix):
+```
+cd apps/mobile && npx expo export --platform web      # -> apps/mobile/dist
+cd ../dashboard && npm run build                        # -> apps/dashboard/dist
+```
+Then at **dash.cloudflare.com → Workers & Pages → Create → Pages → Upload assets**:
+1. Project `getgrub` → drag **`apps/mobile/dist`** → Deploy → diner app URL
+2. Project `getgrub-partners` → drag **`apps/dashboard/dist`** → dashboard URL
+
+### Option B — Connect to Git (auto-rebuild on push)
+Cloudflare Pages → **Create → Connect to Git →** `leroiarnoldd/getgrub`, once per app:
+
+**Diner app**
+- Root directory: `apps/mobile`
+- Build command: `npx expo export --platform web`
+- Build output directory: `apps/mobile/dist`
+- Env vars: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+
+**Dashboard**
+- Root directory: `apps/dashboard`
+- Build command: `npm run build`
+- Build output directory: `apps/dashboard/dist`
+- Env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+
+The `_redirects` files in each app make client-side routing / deep links work on
+Cloudflare Pages automatically.
+
+---
+
+## Alternative: Netlify drag-and-drop (≈5 minutes, no account wiring)
 
 You build the site on your PC, then drag the output folder onto Netlify.
 Because the build bakes in your Supabase keys, no server config is needed.
